@@ -1,0 +1,41 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2024/10/04 13:27:12 by peda-cos          #+#    #+#              #
+#    Updated: 2024/11/24 06:33:33 by peda-cos         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+NAME = libft.a
+
+SRCS = \
+	ft_atoi.c ft_calloc.c ft_copycat.c ft_istype.c ft_itoa.c ft_lstadd.c \
+	ft_lstdel.c ft_lstutil.c ft_memory.c ft_split.c ft_string.c ft_strmod.c \
+	ft_strutil.c get_next_line.c
+
+OBJS = $(SRCS:.c=.o)
+
+CC = cc
+CFLAGS = -Wall -Wextra -Werror
+
+all: $(NAME)
+
+$(NAME): $(OBJS)
+
+%.o: %.c libft.h
+	$(CC) $(CFLAGS) -c $< -o $@
+	ar rcs $(NAME) $@
+
+clean:
+	rm -f $(OBJS)
+
+fclean: clean
+	rm -f $(NAME)
+
+re: fclean all
+
+.PHONY: all clean fclean re
