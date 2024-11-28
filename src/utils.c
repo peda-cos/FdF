@@ -5,40 +5,44 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/24 14:46:16 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/11/24 14:46:18 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/11/28 00:46:35 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/11/28 01:10:11 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/fdf.h"
 
-void	error_exit(const char *message)
+int	valid_filename(const char *filename)
 {
-	perror(message);
-	exit(EXIT_FAILURE);
+	int	len;
+
+	len = ft_strlen(filename);
+	if (len < 5)
+		return (0);
+	filename += len - 4;
+	return (ft_strncmp(filename, ".fdf", 4) == 0);
 }
 
-void	*safe_malloc(size_t size)
+void	make_upper(unsigned int i, char *c)
 {
-	void	*ptr;
-
-	ptr = malloc(size);
-	if (!ptr)
-		error_exit("Memory allocation failed");
-	return (ptr);
+	i++;
+	*c = ft_toupper(*c);
 }
 
-void	free_double_ptr(char **array)
+void	draw_reset(mlx_image_t *image)
 {
-	int	index;
+	uint32_t	i;
+	uint32_t	j;
 
-	index = 0;
-	if (!array)
-		return ;
-	while (array[index])
+	i = 0;
+	while (i < image->height)
 	{
-		free(array[index]);
-		index++;
+		j = 0;
+		while (j < image->width)
+		{
+			mlx_put_pixel(image, j, i, BACKGROUND);
+			j++;
+		}
+		i++;
 	}
-	free(array);
 }
