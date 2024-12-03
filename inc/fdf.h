@@ -131,7 +131,7 @@ typedef struct s_skybox
 	t_vert			dn[121];
 }					t_skybox;
 
-typedef struct s_FdF
+typedef struct s_fdf
 {
 	t_vert		*mesh;
 	t_vec3		x_dir;
