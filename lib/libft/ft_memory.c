@@ -26,6 +26,7 @@ void	*ft_memset(void *s, int c, size_t n)
 	}
 	return (s);
 }
+
 void	*ft_memcpy(void *dest, const void *src, size_t n)
 {
 	size_t				i;
@@ -42,6 +43,7 @@ void	*ft_memcpy(void *dest, const void *src, size_t n)
 	}
 	return (dest);
 }
+
 void	*ft_memmove(void *dest, const void *src, size_t n)
 {
 	unsigned char		*d;
@@ -61,6 +63,7 @@ void	*ft_memmove(void *dest, const void *src, size_t n)
 	}
 	return (dest);
 }
+
 void	*ft_memchr(const void *s, int c, size_t n)
 {
 	size_t			i;
@@ -78,6 +81,7 @@ void	*ft_memchr(const void *s, int c, size_t n)
 	}
 	return (NULL);
 }
+
 int	ft_memcmp(const void *s1, const void *s2, size_t n)
 {
 	size_t				i;

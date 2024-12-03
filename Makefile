@@ -11,41 +11,38 @@
 # **************************************************************************** #
 
 NAME = fdf
+
 CC = cc
-CFLAGS = -Wall -Wextra -Werror -ggdb3
-MLX42_PATH = ./lib/MLX42
-MLX42 = $(MLX42_PATH)/build/libmlx42.a
-LIBFT_PATH = ./lib/libft
-LIBFT = $(LIBFT_PATH)/libft.a
-INCLUDES = -I./include -I$(MLX42_PATH)/include -I$(LIBFT_PATH)/include
-LIBS = -L$(LIBFT_PATH) -lft $(MLX42_PATH)/build/libmlx42.a -ldl -lglfw -pthread -lm
-SRC = src/main.c src/draw.c src/error.c src/parse.c \
-	  src/utils.c src/hooks.c src/color.c src/rotate.c
-OBJS = $(SRCS:%.o=%.c)
+CFLAGS = -Wall -Wextra -Werror
+SRCS = src/fdf.c src/utils.c src/draw_my_life.c
+OBJS = $(SRCS:.c=.o)
+
+LIBFT_DIR = lib/libft
+LIBFT = $(LIBFT_DIR)/libft.a
+
+MLX_DIR = lib/MLX42
+MLX = $(MLX_DIR)/libmlx42.a
 
 all: $(NAME)
 
-$(MLX42): $(MLX42_PATH)
-	cmake $(MLX42_PATH) -B $(MLX42_PATH)/build;
-	make -C$(MLX42_PATH)/build -j4;
+$(NAME): $(OBJS) $(LIBFT) $(MLX)
+	$(CC) $(CFLAGS) -o $(NAME) $(OBJS) $(LIBFT) $(MLX) -lmlx -framework OpenGL -framework AppKit
 
-$(LIBFT): $(LIBFT_PATH)
-	make -C$(LIBFT_PATH);
+$(LIBFT):
+	make -C $(LIBFT_DIR)
 
-$(NAME): $(MLX42) $(LIBFT) $(OBJS)
-	$(CC) $(OBJS) $(LIBS) $(INCLUDES) -o $@
-
-%.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@ $(INCLUDES)
+$(MLX):
+	make -C $(MLX_DIR)
 
 clean:
-	rm -rf $(OBJS)
-	make clean -C$(LIBFT_PATH)
+	rm -f $(OBJS)
+	make clean -C $(LIBFT_DIR)
+	make clean -C $(MLX_DIR)
 
 fclean: clean
-	rm $(NAME)
-	rm fclean -C$(LIBFT_PATH)
-	rm fclean -C$(MLX42_PATH)
+	rm -f $(NAME)
+	make fclean -C $(LIBFT_DIR)
+	make fclean -C $(MLX_DIR)
 
 re: fclean all
 

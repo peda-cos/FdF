@@ -24,6 +24,7 @@ int	ft_lstsize(t_list *lst)
 	}
 	return (len);
 }
+
 t_list	*ft_lstlast(t_list *lst)
 {
 	if (!lst)
@@ -32,6 +33,7 @@ t_list	*ft_lstlast(t_list *lst)
 		lst = lst->next;
 	return (lst);
 }
+
 void	ft_lstiter(t_list *lst, void (*f)(void *))
 {
 	if (!lst || !f)
@@ -42,6 +44,7 @@ void	ft_lstiter(t_list *lst, void (*f)(void *))
 		lst = lst->next;
 	}
 }
+
 t_list	*ft_lstmap(t_list *lst, void *(*f)(void *), void (*del)(void *))
 {
 	t_list	*new_list;

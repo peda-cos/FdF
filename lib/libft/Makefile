@@ -13,9 +13,10 @@
 NAME = libft.a
 
 SRCS = \
-	ft_atoi.c ft_calloc.c ft_copycat.c ft_istype.c ft_itoa.c ft_lstadd.c \
-	ft_lstdel.c ft_lstutil.c ft_memory.c ft_split.c ft_string.c ft_strmod.c \
-	ft_strutil.c get_next_line.c
+	ft_atoi.c ft_copycat.c ft_itoa.c ft_lstdel.c ft_memory.c ft_puthex_fd.c \
+	ft_putptr_fd.c ft_split.c ft_strmod.c get_next_line.c ft_calloc.c \
+	ft_istype.c ft_lstadd.c ft_lstutil.c ft_printf.c ft_putnbr_fd.c \
+	ft_puts_fd.c ft_string.c ft_strutil.c
 
 OBJS = $(SRCS:.c=.o)
 

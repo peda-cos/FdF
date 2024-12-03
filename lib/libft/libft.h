@@ -15,6 +15,7 @@
 
 # include <stdlib.h>
 # include <unistd.h>
+# include <stdarg.h>
 
 # ifndef BUFFER_SIZE
 #  define BUFFER_SIZE 1024
@@ -25,6 +26,14 @@ typedef struct s_list
 	void			*content;
 	struct s_list	*next;
 }				t_list;
+
+int		ft_putchar_fd(char c, int fd);
+int		ft_putstr_fd(char *s, int fd);
+int		ft_putnbr_fd(int n, int fd);
+int		ft_putunbr_fd(unsigned int n, int fd);
+int		ft_puthex_fd(unsigned int n, int uppercase, int fd);
+int		ft_putptr_fd(unsigned long ptr, int fd);
+int		ft_printf(const char *format, ...);
 
 int		ft_atoi(const char *nptr);
 void	*ft_calloc(size_t count, size_t size);
@@ -49,9 +58,6 @@ void	*ft_memmove(void *dst, const void *src, size_t n);
 void	*ft_memchr(const void *s, int c, size_t n);
 int		ft_memcmp(const void *s1, const void *s2, size_t n);
 
-void	ft_putchar_fd(char c, int fd);
-void	ft_putstr_fd(char *s, int fd);
-void	ft_putnbr_fd(int n, int fd);
 int		ft_tolower(int c);
 int		ft_toupper(int c);
 

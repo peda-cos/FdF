@@ -29,6 +29,7 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 	dst[i] = '\0';
 	return (src_len);
 }
+
 size_t	ft_strlcat(char *dst, const char *src, size_t size)
 {
 	size_t	dst_len;
@@ -48,6 +49,7 @@ size_t	ft_strlcat(char *dst, const char *src, size_t size)
 	dst[dst_len + i] = '\0';
 	return (dst_len + src_len);
 }
+
 char	*ft_strdup(const char *s)
 {
 	size_t	len;
@@ -60,6 +62,7 @@ char	*ft_strdup(const char *s)
 	ft_strlcpy(dup, s, len);
 	return (dup);
 }
+
 char	*ft_strjoin(char const *s1, char const *s2)
 {
 	size_t	len1;

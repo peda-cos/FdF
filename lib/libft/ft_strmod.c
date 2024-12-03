@@ -33,6 +33,7 @@ char	*ft_substr(char const *s, unsigned int start, size_t len)
 	ft_strlcpy(substr, s + start, sub_len + 1);
 	return (substr);
 }
+
 char	*ft_strnstr(const char *big, const char *little, size_t len)
 {
 	size_t	little_len;
@@ -51,6 +52,7 @@ char	*ft_strnstr(const char *big, const char *little, size_t len)
 	}
 	return (NULL);
 }
+
 char	*ft_strtrim(char const *s1, char const *set)
 {
 	size_t	start;
@@ -73,6 +75,7 @@ char	*ft_strtrim(char const *s1, char const *set)
 	ft_strlcpy(trimmed, s1 + start, trim_len + 1);
 	return (trimmed);
 }
+
 void	ft_striteri(char *s, void (*f)(unsigned int, char *))
 {
 	unsigned int	i;
@@ -86,6 +89,7 @@ void	ft_striteri(char *s, void (*f)(unsigned int, char *))
 		i++;
 	}
 }
+
 char	*ft_strmapi(char const *s, char (*f)(unsigned int, char))
 {
 	char	*str;

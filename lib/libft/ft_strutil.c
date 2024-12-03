@@ -21,6 +21,7 @@ size_t	ft_strlen(const char *s)
 		len++;
 	return (len);
 }
+
 char	*ft_strchr(const char *s, int c)
 {
 	char	ch;
@@ -38,6 +39,7 @@ char	*ft_strchr(const char *s, int c)
 		return ((char *)&s[i]);
 	return (NULL);
 }
+
 char	*ft_strrchr(const char *s, int c)
 {
 	char	*last;
@@ -57,6 +59,7 @@ char	*ft_strrchr(const char *s, int c)
 		return ((char *)&s[i]);
 	return (last);
 }
+
 int	ft_strncmp(const char *s1, const char *s2, size_t n)
 {
 	size_t	i;
