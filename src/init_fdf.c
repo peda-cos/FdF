@@ -1,96 +1,97 @@
 #include "../inc/fdf.h"
 
-static void	calculate_mesh(char *filepath, t_FdF *s)
+static void	calculate_mesh(char *file_path, t_FdF *fdf_data)
 {
-	int16_t		fd;
-	char		current;
-	char		previous;
+	int16_t		file_descriptor;
+	char		current_char;
+	char		previous_char;
 
-	fd = open(filepath, O_RDONLY);
-	if (fd == -1)
-		clean_exit(filepath, s);
-	previous = ' ';
-	while (read(fd, &current, 1))
+	file_descriptor = open(file_path, O_RDONLY);
+	if (file_descriptor == -1)
+		clean_exit(file_path, fdf_data);
+	previous_char = ' ';
+	while (read(file_descriptor, &current_char, 1))
 	{
-		if (!ft_isspace(current) && ft_isspace(previous))
-			s->vert_count++;
-		if (current == '\n')
-			s->mesh_height++;
-		if (current == '\n' && !s->mesh_width)
-			s->mesh_width = s->vert_count;
-		previous = current;
+		if (!ft_isspace(current_char) && ft_isspace(previous_char))
+			fdf_data->vertex_count++;
+		if (current_char == '\n')
+			fdf_data->mesh_height++;
+		if (current_char == '\n' && !fdf_data->mesh_width)
+			fdf_data->mesh_width = fdf_data->vertex_count;
+		previous_char = current_char;
 	}
-	if (current != '\n')
-		s->mesh_height++;
-	if (!s->mesh_width)
-		s->mesh_width = s->vert_count;
-	close(fd);
-	if (!s->vert_count || s->mesh_width * s->mesh_height != s->vert_count)
-		clean_exit("Map error", s);
+	if (current_char != '\n')
+		fdf_data->mesh_height++;
+	if (!fdf_data->mesh_width)
+		fdf_data->mesh_width = fdf_data->vertex_count;
+	close(file_descriptor);
+	if (!fdf_data->vertex_count || 
+	    fdf_data->mesh_width * fdf_data->mesh_height != fdf_data->vertex_count)
+		clean_exit("Map error", fdf_data);
 }
 
-static int32_t	parse_next_value(int fd, t_FdF *s)
+static int32_t	parse_next_value(int file_descriptor, t_FdF *fdf_data)
 {
 	int		bytes_read;
-	int		i;
-	char	value[64];
+	int		buffer_index;
+	char	value_buffer[64];
 
 	bytes_read = 1;
-	i = 0;
-	while (bytes_read && i < 63)
+	buffer_index = 0;
+	while (bytes_read && buffer_index < 63)
 	{
-		bytes_read = read(fd, &value[i], 1);
+		bytes_read = read(file_descriptor, &value_buffer[buffer_index], 1);
 		if (bytes_read == -1)
 		{
-			close(fd);
-			clean_exit("Read failed", s);
+			close(file_descriptor);
+			clean_exit("Read failed", fdf_data);
 		}
-		if (i && ft_isspace(value[i]))
+		if (buffer_index && ft_isspace(value_buffer[buffer_index]))
 			break ;
-		if (!ft_isspace(value[i]) && bytes_read)
-			i++;
+		if (!ft_isspace(value_buffer[buffer_index]) && bytes_read)
+			buffer_index++;
 	}
-	value[i] = '\0';
-	validate_value(value, s);
-	return (ft_atoi(value));
+	value_buffer[buffer_index] = '\0';
+	validate_value(value_buffer, fdf_data);
+	return (ft_atoi(value_buffer));
 }
 
-static void	populate_mesh(char *filepath, t_FdF *s)
+static void	populate_mesh(char *file_path, t_FdF *fdf_data)
 {
-	int		fd;
-	size_t	i;
-	size_t	x;
-	size_t	y;
+	int		file_descriptor;
+	size_t	vertex_index;
+	size_t	current_x;
+	size_t	current_y;
 
-	fd = open(filepath, O_RDONLY);
-	if (fd == -1)
-		clean_exit(filepath, s);
-	i = 0;
-	x = 0;
-	y = 0;
-	while (i < s->vert_count)
+	file_descriptor = open(file_path, O_RDONLY);
+	if (file_descriptor == -1)
+		clean_exit(file_path, fdf_data);
+	vertex_index = 0;
+	current_x = 0;
+	current_y = 0;
+	while (vertex_index < fdf_data->vertex_count)
 	{
-		s->mesh[i].x = x;
-		s->mesh[i].y = y;
-		s->mesh[i].z = parse_next_value(fd, s);
-		i++;
-		x++;
-		if (x == s->mesh_width)
+		fdf_data->mesh[vertex_index].x = current_x;
+		fdf_data->mesh[vertex_index].y = current_y;
+		fdf_data->mesh[vertex_index].z = parse_next_value(file_descriptor, fdf_data);
+		vertex_index++;
+		current_x++;
+		if (current_x == fdf_data->mesh_width)
 		{
-			y++;
-			x = 0;
+			current_y++;
+			current_x = 0;
 		}
 	}
-	close(fd);
+	close(file_descriptor);
 }
 
-void	init_fdf(char *filepath, t_FdF *s)
+void	init_fdf(char *file_path, t_FdF *fdf_data)
 {
-	calculate_mesh(filepath, s);
-	s->mesh = (t_vert *)malloc(s->vert_count * sizeof(t_vert));
-	if (!s->mesh)
-		clean_exit("Memory allocation failed", s);
-	populate_mesh(filepath, s);
-	set_vert_colors(s);
-	s->height_scale = 1;
+	calculate_mesh(file_path, fdf_data);
+	fdf_data->mesh = (t_vert *)malloc(fdf_data->vertex_count * sizeof(t_vert));
+	if (!fdf_data->mesh)
+		clean_exit("Memory allocation failed", fdf_data);
+	populate_mesh(file_path, fdf_data);
+	set_vert_colors(fdf_data);
+	fdf_data->height_scale = 1;
 }
