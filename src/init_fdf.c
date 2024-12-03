@@ -26,7 +26,7 @@ static void	calculate_mesh(char *file_path, t_FdF *fdf_data)
 		fdf_data->mesh_width = fdf_data->vertex_count;
 	close(file_descriptor);
 	if (!fdf_data->vertex_count || 
-	    fdf_data->mesh_width * fdf_data->mesh_height != fdf_data->vertex_count)
+		fdf_data->mesh_width * fdf_data->mesh_height != fdf_data->vertex_count)
 		clean_exit("Map error", fdf_data);
 }
 
