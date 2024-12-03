@@ -1,3 +1,5 @@
+#include "../inc/fdf.h"
+
 static void	calculate_mesh(char *filepath, t_FdF *s)
 {
 	int16_t		fd;
