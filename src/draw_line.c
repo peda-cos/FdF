@@ -6,73 +6,100 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 20:20:42 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/13 13:00:00 by peda-cos         ###   ########.fr       */
+/*   Updated: 2024/12/12 20:20:43 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fdf.h"
 
-static int	abs_val(int v)
+static void init_br(t_br *b, t_point p1, t_point p2);
+static int  clip_ln(t_point *p1, t_point *p2);
+static void draw_bresen(mlx_image_t *img, t_point p1, t_point p2, t_br b);
+
+void    draw_ln(mlx_image_t *img, t_point p1, t_point p2)
 {
-	if (v < 0)
-		return (-v);
-	return (v);
+	t_br b;
+
+	if (!clip_ln(&p1, &p2))
+		return ;
+	init_br(&b, p1, p2);
+	draw_bresen(img, p1, p2, b);
 }
 
-static unsigned int	bresenham_grad(t_point cur, t_point start, t_point end)
+static void draw_bresen(mlx_image_t *img, t_point p1, t_point p2, t_br b)
 {
-	int	total_len;
-
-	total_len = calc_dist(start, end);
-	return (calc_grad(cur, start, total_len));
-}
-
-void	bresenham_algorithm(mlx_image_t *img, t_point p1, t_point p2)
-{
-	int		dx;
-	int		sx;
-	int		dy;
-	int		sy;
-	int		err;
-	int		e2;
-	t_point	cur;
-	t_point	start;
-	t_point	end;
-
-	start = p1;
-	end = p2;
-	dx = abs_val(end.x - start.x);
-	sx = (start.x < end.x) ? 1 : -1;
-	dy = -abs_val(end.y - start.y);
-	sy = (start.y < end.y) ? 1 : -1;
-	err = dx + dy;
-	cur = start;
 	while (1)
 	{
-		cur.c = bresenham_grad(cur, start, end);
-		if (cur.x >= 0 && cur.x < g_res_x && cur.y >= 0 && cur.y < g_res_y)
-			mlx_put_pixel(img, cur.x, cur.y, cur.c);
-		if (cur.x == end.x && cur.y == end.y)
+		if (p1.x < g_res_x && p1.y < g_res_y && p1.x > 0 && p1.y > 0)
+			mlx_put_pixel(img, p1.x, p1.y, b.color);
+		else if ((p1.x > g_res_x && b.ddx > 0) ||
+			(p1.y > g_res_y && b.ddy > 0) ||
+			(p1.x < 0 && b.ddx < 0) ||
+			(p1.y < 0 && b.ddy < 0))
+			return ;
+		if (p1.x == p2.x && p1.y == p2.y)
 			break ;
-		e2 = 2 * err;
-		if (e2 >= dy)
+		b.e2 = b.err * 2;
+		if (b.e2 > -b.dy)
 		{
-			if (cur.x == end.x)
-				break ;
-			err += dy;
-			cur.x += sx;
+			b.err -= b.dy;
+			p1.x += b.sx;
 		}
-		if (e2 <= dx)
+		if (b.e2 < b.dx)
 		{
-			if (cur.y == end.y)
-				break ;
-			err += dx;
-			cur.y += sy;
+			b.err += b.dx;
+			p1.y += b.sy;
 		}
+		b.color = calc_grad(p1, p2, b.t_l);
 	}
 }
 
-void	draw_line(mlx_image_t *img, t_point p1, t_point p2)
+static int clip_ln(t_point *p1, t_point *p2)
 {
-	bresenham_algorithm(img, p1, p2);
+	if (p1->x < 0)
+	{
+		if (p2->x != p1->x)
+			p1->y += ((p2->y - p1->y) * (-p1->x)) / (p2->x - p1->x);
+		p1->x = 0;
+	}
+	else if (p1->x > g_res_x)
+	{
+		if (p2->x != p1->x)
+			p1->y += ((p2->y - p1->y) * (g_res_x - p1->x))
+				/ (p2->x - p1->x);
+		p1->x = g_res_x;
+	}
+	if (p1->y < 0)
+	{
+		if (p2->y != p1->y)
+			p1->x += (p2->x - p1->x) * (-p1->y) / (p2->y - p1->y);
+		p1->y = 0;
+	}
+	else if (p1->y > g_res_y)
+	{
+		if (p2->y != p1->y)
+			p1->x += (p2->x - p1->x) * (g_res_y - p1->y)
+				/ (p2->y - p1->y);
+		p1->y = g_res_y;
+	}
+	return (p1->x >= 0 && p1->x <= g_res_x && p1->y >= 0 && p1->y <= g_res_y);
+}
+
+static void init_br(t_br *b, t_point p1, t_point p2)
+{
+	b->dx = labs((long)p2.x - (long)p1.x);
+	b->ddx = (long)p2.x - (long)p1.x;
+	b->dy = labs((long)p2.y - (long)p1.y);
+	b->ddy = (long)p2.y - (long)p1.y;
+	if (p1.x < p2.x)
+		b->sx = 1;
+	else
+		b->sx = -1;
+	if (p1.y < p2.y)
+		b->sy = 1;
+	else
+		b->sy = -1;
+	b->err = b->dx - b->dy;
+	b->t_l = calc_dist(p1, p2);
+	b->color = calc_grad(p1, p2, b->t_l);
 }

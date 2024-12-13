@@ -6,22 +6,22 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 20:22:29 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/13 13:00:00 by peda-cos         ###   ########.fr       */
+/*   Updated: 2024/12/12 20:22:30 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fdf.h"
 
-void	cleanup_exit(t_mlx *m, int r)
+void cleanup_exit(t_mlx *m, int r)
 {
 	mlx_terminate(m->mlx);
 	free_grid(m->map, 0);
 	exit(r);
 }
 
-int	alloc_map(t_map *mp)
+int alloc_map(t_map *mp)
 {
-	int	i;
+	int i;
 
 	mp->grid = malloc((mp->h) * (sizeof(t_point *)));
 	if (!mp->grid)
@@ -37,9 +37,9 @@ int	alloc_map(t_map *mp)
 	return (1);
 }
 
-int	free_grid(t_map *mp, int r)
+int free_grid(t_map *mp, int r)
 {
-	int	i;
+	int i;
 
 	i = 0;
 	if (mp->grid)
@@ -58,16 +58,17 @@ int	free_grid(t_map *mp, int r)
 	return (r);
 }
 
-int	free_strarr(char **arr)
+int free_strarr(char **arr)
 {
-	size_t	i;
+	size_t i;
 
 	i = 0;
 	if (arr)
 	{
 		while (arr[i])
 		{
-			free(arr[i]);
+			if (arr[i])
+				free(arr[i]);
 			i++;
 		}
 		free(arr);
@@ -76,7 +77,7 @@ int	free_strarr(char **arr)
 	return (-1);
 }
 
-int	free_ret(void *p, int r)
+int free_ret(void *p, int r)
 {
 	free(p);
 	return (r);

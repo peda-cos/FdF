@@ -6,35 +6,70 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/15 20:24:20 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/13 13:00:00 by peda-cos         ###   ########.fr       */
+/*   Updated: 2024/12/12 20:24:21 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fdf.h"
 
-static int	name_check(char *file)
+static int  map_dims(int fd, t_map *mp);
+static int  parse_line(int fd, t_map *mp);
+static void find_map_minmax(t_map *mp);
+static int  valid_name(char *f);
+
+int parse_map(char *f, t_map *mp)
 {
-	if (ft_strlen(file) < 4)
+	int fd;
+
+	fd = open(f, O_RDONLY);
+	if (fd == -1 || !map_dims(fd, mp) || mp->w == -1 ||
+		!valid_name(f) || mp->w > 5000 || mp->h > 5000 || !alloc_map(mp))
+	{
+		skip_line(fd);
+		if (fd != -1)
+			close(fd);
 		return (0);
-	file += ft_strlen(file) - 4;
-	if (ft_strncmp(file, ".fdf", 4) != 0)
+	}
+	close(fd);
+	fd = open(f, O_RDONLY);
+	if (fd == -1)
+		return (free_grid(mp, 0));
+	if (!parse_line(fd, mp))
+	{
+		close(fd);
+		return (free_grid(mp, 0));
+	}
+	close(fd);
+	find_map_minmax(mp);
+	return (1);
+}
+
+static int valid_name(char *f)
+{
+	if (ft_strlen(f) < 4)
+		return (0);
+	if (ft_strlen(f) == 4)
+		if (ft_strncmp(f, ".fdf", ft_strlen(f)) != 0)
+			return (0);
+	f += ft_strlen(f) - 4;
+	if (ft_strncmp(f, ".fdf", 4) != 0)
 		return (0);
 	return (1);
 }
 
-static int	get_dims(int fd, t_map *map)
+static int map_dims(int fd, t_map *mp)
 {
-	char	*l;
-	char	**sp;
-	int		tw;
+	char    *l;
+	char    **sp;
+	int     tw;
 
 	l = get_next_line(fd);
-	map->w = -1;
-	map->h = 0;
+	mp->w = -1;
+	mp->h = 0;
 	while (l)
 	{
 		tw = 0;
-		map->h++;
+		mp->h++;
 		sp = ft_split(l, ' ');
 		free(l);
 		if (!sp)
@@ -42,20 +77,20 @@ static int	get_dims(int fd, t_map *map)
 		while (sp[tw])
 			tw++;
 		free_strarr(sp);
-		if (map->w != -1 && tw != map->w)
+		if (mp->w != -1 && tw != mp->w)
 			return (0);
-		map->w = tw;
+		mp->w = tw;
 		l = get_next_line(fd);
 	}
 	return (1);
 }
 
-static int	parse_line(int fd, t_map *map)
+static int parse_line(int fd, t_map *mp)
 {
-	int		i;
-	int		j;
-	char	*l;
-	char	**sp;
+	int     i;
+	int     j;
+	char    *l;
+	char    **sp;
 
 	i = 0;
 	l = get_next_line(fd);
@@ -67,9 +102,9 @@ static int	parse_line(int fd, t_map *map)
 		if (!sp)
 			return (free_ret(l, 0));
 		j = 0;
-		while (j < map->w)
+		while (j < mp->w)
 		{
-			map->grid[i][j].value = ft_atoi(sp[j]);
+			mp->grid[i][j].value = ft_atoi(sp[j]);
 			j++;
 		}
 		free(l);
@@ -80,54 +115,26 @@ static int	parse_line(int fd, t_map *map)
 	return (1);
 }
 
-static void	get_minmax(t_map *map)
+static void find_map_minmax(t_map *mp)
 {
-	int	h;
-	int	w;
+	int h;
+	int w;
 
-	map->max = map->grid[0][0].value;
-	map->min = map->grid[0][0].value;
+	mp->max = mp->grid[0][0].value;
+	mp->min = mp->grid[0][0].value;
 	h = 0;
-	while (h < map->h)
+	while (h < mp->h)
 	{
 		w = 0;
-		while (w < map->w)
+		while (w < mp->w)
 		{
-			if (map->grid[h][w].value > map->max)
-				map->max = map->grid[h][w].value;
-			if (map->grid[h][w].value < map->min)
-				map->min = map->grid[h][w].value;
+			if (mp->grid[h][w].value > mp->max)
+				mp->max = mp->grid[h][w].value;
+			if (mp->grid[h][w].value < mp->min)
+				mp->min = mp->grid[h][w].value;
 			w++;
 		}
 		h++;
 	}
-	map->range = (long)map->max - (long)map->min;
-}
-
-int	parse_map(char *file, t_map *map)
-{
-	int	fd;
-
-	fd = open(file, O_RDONLY);
-	if (fd == -1 || !get_dims(fd, map) || map->w == -1
-		|| !name_check(file) || map->w > 5000 || map->h > 5000
-		|| !alloc_map(map))
-	{
-		skip_line(fd);
-		if (fd != -1)
-			close(fd);
-		return (0);
-	}
-	close(fd);
-	fd = open(file, O_RDONLY);
-	if (fd == -1)
-		return (free_grid(map, 0));
-	if (!parse_line(fd, map))
-	{
-		close(fd);
-		return (free_grid(map, 0));
-	}
-	close(fd);
-	get_minmax(map);
-	return (1);
+	mp->range = (long)mp->max - (long)mp->min;
 }

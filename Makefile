@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
+#    Makefile                                           :+:      :+:    :+:   #
 #                                                     +:+ +:+         +:+      #
 #    By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/15 05:35:59 by peda-cos          #+#    #+#              #
-#    Updated: 2024/12/13 00:58:26 by peda-cos         ###   ########.fr        #
+#    Updated: 2024/12/13 12:00:00 by peda-cos         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,19 +23,11 @@ SRC_DIR     =   src
 
 HEADERS     =   -I $(INC_DIR) -I $(MLX42_DIR)/include -I $(LIBFT_DIR)
 
-SRC         =   $(SRC_DIR)/color_functions.c \
-                $(SRC_DIR)/draw_line.c \
-                $(SRC_DIR)/fdf.c \
-                $(SRC_DIR)/main.c \
-                $(SRC_DIR)/math_utils.c \
-                $(SRC_DIR)/memory_functions.c \
-                $(SRC_DIR)/parsing.c \
-                $(SRC_DIR)/frame_hook.c \
-                $(SRC_DIR)/init_cam.c \
-                $(SRC_DIR)/manage_keys.c \
-                $(SRC_DIR)/menu.c \
-                $(SRC_DIR)/key_actions.c \
-                $(SRC_DIR)/bresenham.c
+SRC         =   $(SRC_DIR)/color_functions.c $(SRC_DIR)/fdf.c \
+				$(SRC_DIR)/key_hook.c $(SRC_DIR)/math_utils.c $(SRC_DIR)/move.c \
+				$(SRC_DIR)/zoom.c $(SRC_DIR)/draw_line.c \
+				$(SRC_DIR)/main.c $(SRC_DIR)/memory_functions.c \
+				$(SRC_DIR)/parsing.c
 
 OBJ         =   $(SRC:%.c=%.o)
 
@@ -73,7 +65,7 @@ clean:
 fclean: clean
 	@echo "Cleaning all files..."
 	@$(MAKE) -C $(LIBFT_DIR) fclean
-	@rm -rf $(NAME) $(MLX42_DIR)/build
+	@rm -rf $(NAME) $(MLX42_DIR)
 
 re: fclean all
 
