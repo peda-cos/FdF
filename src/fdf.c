@@ -1,83 +1,83 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   color_mapping.c                                    :+:      :+:    :+:   */
+/*   fdf.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/15 22:03:51 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/02 22:47:55 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/11/15 20:20:59 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/13 13:00:00 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fdf.h"
 
-void	initialize_settings(t_fdf *fdf)
+static void	calc_scr(t_map *mp, t_screen *s)
 {
-	fdf->mesh_scale = ft_imin(fdf->mlx->width, fdf->mlx->height);
-	fdf->mesh_scale /= ft_imax(fdf->mesh_width, fdf->mesh_height)
-		+ ft_imax(fdf->max_height, -fdf->min_height);
-	fdf->mesh_scale = fmax(fdf->mesh_scale * 0.6, 0.01);
-	if (!fdf->orthographic)
-		fdf->mesh_scale *= 3.3333;
-	fdf->line_thickness = 1;
-	fdf->vertex_size = 1;
-	fdf->dot_size = 1;
-	fdf->dot_density = 1;
-	fdf->draw_skybox = 1;
-	fdf->camera_height = 2500;
-	fdf->focus = 750;
-	fdf->yaw = M_PI / 180 * 45;
-	fdf->pitch = M_PI / 180 * (90 - 35.264);
-	fdf->skybox_number = 1;
-	fdf->height_scale *= fmax((double)ft_imax(fdf->mesh_width, fdf->mesh_height) / 1024, 1);
-}
+	int	lw;
 
-void	initialize_mlx(t_fdf *fdf)
-{
-	int32_t	width;
-	int32_t	height;
-
-	fdf->mlx = mlx_init(WINDOW_WIDTH, WINDOW_HEIGHT, "FdF", 1);
-	if (!fdf->mlx)
-		exit_program("mlx_init failed", fdf);
-	mlx_get_monitor_size(0, &width, &height);
-	if (width < WINDOW_WIDTH || height < WINDOW_HEIGHT)
+	lw = 0;
+	if (mp->w < mp->h)
+		s->half_tiles = (mp->w * 2 + (mp->h - mp->w));
+	else
+		s->half_tiles = (mp->h * 2 + (mp->w - mp->h));
+	if (g_res_x > g_res_y)
 	{
-		mlx_terminate(fdf->mlx);
-		width = ft_imin(width, height) * 0.7;
-		height = width;
-		fdf->mlx = mlx_init(width, height, "FdF", 1);
-		if (!fdf->mlx)
-			exit_program("mlx_init failed", fdf);
+		s->half_tile_w = g_res_y / s->half_tiles;
+		lw = (g_res_x - g_res_y) / 2;
 	}
-	fdf->depth_map = mlx_new_image(fdf->mlx, fdf->mlx->width, fdf->mlx->height);
-	if (!fdf->depth_map)
-		exit_program("mlx_new_image failed", fdf);
-	fdf->background = mlx_new_image(fdf->mlx, fdf->mlx->width, fdf->mlx->height);
-	if (!fdf->background || mlx_image_to_window(fdf->mlx, fdf->background, 0, 0) < 0)
-		exit_program("mlx_new_image failed", fdf);
-	fdf->canvas = mlx_new_image(fdf->mlx, fdf->mlx->width, fdf->mlx->height);
-	if (!fdf->canvas || mlx_image_to_window(fdf->mlx, fdf->canvas, 0, 0) < 0)
-		exit_program("mlx_new_image failed", fdf);
+	else
+		s->half_tile_w = g_res_x / s->half_tiles;
+	if (s->half_tile_w < 2)
+		s->half_tile_w = 2;
+	s->half_tile_h = s->half_tile_w * tan(g_pi / 6);
+	s->start_x = mp->h * s->half_tile_w + lw;
+	s->mar_x = (g_res_x - s->half_tiles * s->half_tile_w) / 2;
+	s->mar_y = (g_res_y - s->half_tiles * s->half_tile_h) / 2;
 }
 
-int	main(int argc, char **argv)
+static void	calc_coord(t_map *mp, t_screen *s)
 {
-	t_fdf	fdf;
+	int		h;
+	int		w;
+	int		hm;
+	t_point	*p;
 
-	errno = 0;
-	ft_bzero(&fdf, sizeof(t_fdf));
-	if (argc != 2 && argc != 3)
-		exit_program("Wrong number of arguments! Allowed: 1 or 2", &fdf);
-	initialize_mesh(argc, argv, &fdf);
-	initialize_skybox(&fdf);
-	initialize_mlx(&fdf);
-	initialize_settings(&fdf);
-	initialize_hooks(&fdf);
-	free_skybox_textures(&fdf);
-	if (fdf.fps_image)
-		mlx_delete_image(fdf.mlx, fdf.fps_image);
-	mlx_terminate(fdf.mlx);
-	free(fdf.mesh);
+	h = 0;
+	hm = s->half_tile_h / 2;
+	if (hm < 1)
+		hm = 1;
+	while (h < mp->h)
+	{
+		w = 0;
+		while (w < mp->w)
+		{
+			p = &mp->grid[h][w];
+			p->x = s->start_x + (w - h) * (s->half_tile_w);
+			p->y = s->mar_y + ((w + h) * (s->half_tile_h))
+				- p->value * hm;
+			set_pt_clr(p, *mp);
+			w++;
+		}
+		h++;
+	}
+}
+
+void	run_fdf(t_mlx *m, t_map *mp)
+{
+	calc_scr(mp, &m->s);
+	calc_coord(mp, &m->s);
+	draw_grid(m, mp);
+}
+
+void	skip_line(int fd)
+{
+	char	*l;
+
+	l = get_next_line(fd);
+	while (l)
+	{
+		free(l);
+		l = get_next_line(fd);
+	}
 }

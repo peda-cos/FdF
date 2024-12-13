@@ -1,31 +1,44 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   math_utils.c                                       :+:      :+:    :+:   */
+/*   move.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/15 20:22:22 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/13 01:24:43 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/11/15 20:23:06 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/13 01:25:02 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fdf.h"
 
-unsigned int	calc_ip(long s, long e, long n, long mx)
+void	move(t_mlx *mlx, t_dir dir)
 {
-	double	r;
+	int	h;
+	int	w;
+	int	dx;
+	int	dy;
 
-	if (mx == 0)
-		return (s);
-	r = (double)n / (double)mx;
-	return ((unsigned int)((unsigned long)(s + r * (e - s) + 0.5)));
-}
-
-int	calc_dist(t_point p1, t_point p2)
-{
-	int	r;
-
-	r = sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
-	return (r);
+	dx = 0;
+	dy = 0;
+	if (dir == UP)
+		dy = 1;
+	if (dir == DOWN)
+		dy = -1;
+	if (dir == LEFT)
+		dx = 1;
+	if (dir == RIGHT)
+		dx = -1;
+	h = 0;
+	while (h < mlx->map->h)
+	{
+		w = 0;
+		while (w < mlx->map->w)
+		{
+			mlx->map->grid[h][w].x += dx * g_mv_amt;
+			mlx->map->grid[h][w].y += dy * g_mv_amt;
+			w++;
+		}
+		h++;
+	}
 }

@@ -6,7 +6,7 @@
 #    By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2024/11/15 05:35:59 by peda-cos          #+#    #+#              #
-#    Updated: 2024/11/28 00:58:20 by peda-cos         ###   ########.fr        #
+#    Updated: 2024/12/13 00:58:26 by peda-cos         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,52 +18,62 @@ LIBFT       =   $(LIBFT_DIR)/libft.a
 MLX42_DIR   =   lib/MLX42
 MLX42       =   $(MLX42_DIR)/build/libmlx42.a
 
+INC_DIR     =   inc
 SRC_DIR     =   src
-SRC         =   \
-				$(SRC_DIR)/color_mapping.c $(SRC_DIR)/error_handling.c \
-				$(SRC_DIR)/line_render.c $(SRC_DIR)/math_utils.c \
-				$(SRC_DIR)/mesh_rendering.c $(SRC_DIR)/reader_loop.c \
-				$(SRC_DIR)/triangle_rendering.c $(SRC_DIR)/vector_operations.c \
-				$(SRC_DIR)/color_operations.c $(SRC_DIR)/event_handlers.c \
-				$(SRC_DIR)/line_rendering.c $(SRC_DIR)/mesh_initializer.c \
-				$(SRC_DIR)/pixel_rendering.c $(SRC_DIR)/skybox_projection.c \
-				$(SRC_DIR)/ui_controls.c $(SRC_DIR)/cursor_handling.c \
-				$(SRC_DIR)/fdf.c $(SRC_DIR)/map_reader.c \
-				$(SRC_DIR)/mesh_projection.c $(SRC_DIR)/png_parser.c \
-				$(SRC_DIR)/skybox_rendering.c $(SRC_DIR)/validation_utils.c
 
-OBJ_DIR     =   obj
-OBJ         =   $(SRC:%.c=$(OBJ_DIR)/%.o)
+HEADERS     =   -I $(INC_DIR) -I $(MLX42_DIR)/include -I $(LIBFT_DIR)
+
+SRC         =   $(SRC_DIR)/color_functions.c \
+                $(SRC_DIR)/draw_line.c \
+                $(SRC_DIR)/fdf.c \
+                $(SRC_DIR)/main.c \
+                $(SRC_DIR)/math_utils.c \
+                $(SRC_DIR)/memory_functions.c \
+                $(SRC_DIR)/parsing.c \
+                $(SRC_DIR)/frame_hook.c \
+                $(SRC_DIR)/init_cam.c \
+                $(SRC_DIR)/manage_keys.c \
+                $(SRC_DIR)/menu.c \
+                $(SRC_DIR)/key_actions.c \
+                $(SRC_DIR)/bresenham.c
+
+OBJ         =   $(SRC:%.c=%.o)
 
 CC          =   cc
-CFLAGS      =   -Wall -Wextra -Werror -Ofast
-LDFLAGS     =   -lm -ldl -lglfw -flto
+CFLAGS      =   -Wall -Wextra -Werror -Ofast $(HEADERS)
+LDFLAGS     =   -lm -ldl -lglfw -pthread -flto
 
 all: $(LIBFT) $(MLX42) $(NAME)
 
 $(NAME): $(OBJ) $(LIBFT) $(MLX42)
-	$(CC) $(OBJ) $(LIBFT) $(MLX42) -o $(NAME) $(LDFLAGS)
+	@$(CC) $(OBJ) $(LIBFT) $(MLX42) -o $(NAME) $(LDFLAGS)
+	@echo "Executable $(NAME) created!"
 
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
-	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c $< -o $@
+%.o: %.c
+	@$(CC) $(CFLAGS) -c $< -o $@
+	@echo "Compiling $<"
 
 $(MLX42):
-	@echo "Cloning MLX42..."
-	cd lib && git clone https://github.com/codam-coding-college/MLX42.git
-	cmake -B $(MLX42_DIR)/build -S $(MLX42_DIR)
-	make -C $(MLX42_DIR)/build -j4
+	@echo "Cloning and building MLX42..."
+	@if [ ! -d "$(MLX42_DIR)" ]; then \
+		cd lib && git clone https://github.com/codam-coding-college/MLX42.git; \
+	fi
+	@cmake -B $(MLX42_DIR)/build -S $(MLX42_DIR)
+	@make -C $(MLX42_DIR)/build -j4
 
 $(LIBFT):
-	$(MAKE) -C $(LIBFT_DIR)
+	@echo "Building libft..."
+	@$(MAKE) -C $(LIBFT_DIR)
 
 clean:
-	$(MAKE) -C $(LIBFT_DIR) clean
-	rm -rf $(OBJ_DIR)
+	@echo "Cleaning object files..."
+	@$(MAKE) -C $(LIBFT_DIR) clean
+	@rm -rf $(OBJ)
 
 fclean: clean
-	$(MAKE) -C $(LIBFT_DIR) fclean
-	rm -rf $(NAME) $(MLX42_DIR)
+	@echo "Cleaning all files..."
+	@$(MAKE) -C $(LIBFT_DIR) fclean
+	@rm -rf $(NAME) $(MLX42_DIR)/build
 
 re: fclean all
 

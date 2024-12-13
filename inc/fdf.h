@@ -5,258 +5,140 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/15 21:58:43 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/02 22:53:23 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/12/13 12:00:00 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/13 13:00:00 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FDF_H
 # define FDF_H
 
-# include "../lib/libft/libft.h"
-# include "../lib/MLX42/include/MLX42/MLX42.h"
-
+# include <unistd.h>
 # include <fcntl.h>
+# include <stdlib.h>
 # include <math.h>
-# include <sys/errno.h>
+# include <stdint.h>
+# include <stdbool.h>
+# include "../lib/MLX42/include/MLX42/MLX42.h"
+# include "../lib/libft/libft.h"
 
-# ifndef CURSOR_SETTABLE
-#  define CURSOR_SETTABLE 1
-# endif
-
-# define WINDOW_WIDTH	1280
-# define WINDOW_HEIGHT	720
-
-# define R 3
-# define G 2
-# define B 1
-# define A 0
-
-typedef union u_color
+typedef struct s_point
 {
-	uint32_t	color;
-	uint8_t		channel[4];
-}				t_color;
+	long            x;
+	long            y;
+	long            value;
+	unsigned int    c;
+}                   t_point;
 
-typedef struct s_vec2
+typedef struct s_map
 {
-	double		x;
-	double		y;
-}				t_vec2;
+	int             h;
+	int             w;
+	int             max;
+	int             min;
+	long            range;
+	t_point         **grid;
+}                   t_map;
 
-typedef struct s_ivec2
+typedef struct s_screen
 {
-	int32_t		x;
-	int32_t		y;
-}				t_ivec2;
+	int             half_tiles;
+	int             half_tile_w;
+	int             half_tile_h;
+	int             mar_x;
+	int             mar_y;
+	int             start_x;
+}                   t_screen;
 
-typedef struct s_vec3
+typedef enum e_dir
 {
-	double		x;
-	double		y;
-	double		z;
-}				t_vec3;
+	UP,
+	DOWN,
+	LEFT,
+	RIGHT
+}                   t_dir;
 
-typedef struct s_pixel
+typedef enum e_auto
 {
-	union
-	{
-		t_ivec2		pos;
-		struct
-		{
-			int32_t	x;
-			int32_t	y;
-		};
-	};
-	double			depth;
-	union
-	{
-		uint32_t	color;
-		uint8_t		channel[4];
-	};
-	int8_t			vis;
-	double			u;
-	double			v;
-}					t_pixel;
+	AUTO_STOP = 0,
+	AUTO_CW,
+	AUTO_CCW
+}                   t_auto;
 
-typedef struct s_vert
+typedef enum e_proj
 {
-	union
-	{
-		t_vec3		pos;
-		struct
-		{
-			double	x;
-			double	y;
-			double	z;
-		};
-	};
-	t_pixel			pixel;
-	t_vec3			world;
-}					t_vert;
+	PROJ_ISO = 0,
+	PROJ_TOP
+}                   t_proj;
 
-typedef struct s_tri
+typedef struct s_cam
 {
-	t_pixel			a;
-	t_pixel			b;
-	t_pixel			c;
-	t_ivec2			bbox[2];
-	double			weight_a;
-	double			weight_b;
-	double			weight_c;
-	double			area;
-}					t_tri;
+	double          x_off;
+	double          y_off;
+	double          x_ang;
+	double          y_ang;
+	double          z_ang;
+	double          z_fac;
+	double          scl;
+	double          scl_w;
+	double          scl_h;
+	int             line_type;  
+	t_proj          proj;
+	t_auto          arot_x;
+	t_auto          arot_y;
+	t_auto          arot_z;
+}                   t_cam;
 
-typedef struct s_face
+typedef struct s_mlx
 {
-	t_vert			a;
-	t_vert			b;
-	t_vert			c;
-	t_vert			d;
-}					t_face;
+	mlx_t           *mlx;
+	mlx_image_t     *img1;
+	t_map           *map;
+	t_screen        s;
+	t_cam           cam;
+}                   t_mlx;
 
-typedef struct s_skybox
-{
-	mlx_texture_t	*ft_tex;
-	mlx_texture_t	*rt_tex;
-	mlx_texture_t	*bk_tex;
-	mlx_texture_t	*lf_tex;
-	mlx_texture_t	*up_tex;
-	mlx_texture_t	*dn_tex;
-	t_vert			ft[121];
-	t_vert			rt[121];
-	t_vert			bk[121];
-	t_vert			lf[121];
-	t_vert			up[121];
-	t_vert			dn[121];
-}					t_skybox;
+const static int          g_res_x = 1200;
+const static int          g_res_y = 800;
+const static int          g_mv_amt = 20;
+const static double       g_pi = 3.14159265359;
 
-typedef struct s_fdf
-{
-	t_vert		*mesh;
-	t_vec3		x_dir;
-	t_vec3		y_dir;
-	t_vec3		z_dir;
-	t_skybox	skybox;
-	size_t		mesh_height;
-	size_t		mesh_width;
-	t_vec2		mesh_pos;
-	size_t		vert_count;
-	int32_t		max_height;
-	int32_t		min_height;
-	mlx_image_t	*depth_map;
-	mlx_image_t	*background;
-	mlx_image_t	*canvas;
-	mlx_image_t	*fps_image;
-	mlx_t		*mlx;
-	int8_t		anti_aliasing;
-	int8_t		draw_fps;
-	int8_t		draw_verts;
-	int8_t		draw_edges;
-	int8_t		draw_dotted_edges;
-	int8_t		draw_faces;
-	int8_t		draw_faces_edges;
-	int8_t		draw_skybox;
-	t_ivec2		initial_cursor_pos;
-	double		height_scale;
-	double		mesh_scale;
-	double		initial_mesh_scale;
-	double		pitch;
-	double		yaw;
-	double		vert_size;
-	double		dot_size;
-	int16_t		dot_density;
-	uint8_t		line_thickness;
-	int8_t		orthographic;
-	int8_t		skybox_number;
-	double		clicked;
-	int8_t		mouse_buttons_pressed;
-	double		foc;
-	double		camera_height;
-}				t_fdf;
+const static unsigned int g_blue = 0x0000FFFF;
+const static unsigned int g_red = 0xFF0000FF;
+const static unsigned int g_black = 0x000000FF;
+const static unsigned int g_c1 = 0x0000FFFF;
+const static unsigned int g_c2 = 0xFF0000FF;
+const static unsigned int g_bg_c = 0x000000FF;
 
-// colors
-int32_t calculate_height_color(int32_t height, t_fdf *fdf);
-uint8_t interpolate_color_channel(uint8_t start, uint8_t end, double factor);
-uint32_t interpolate_color(uint32_t color_start, uint32_t color_end, double factor);
-uint32_t calculate_fade_color(uint32_t color_start, uint32_t color_end, int32_t steps, int step);
-uint32_t get_texture_color(mlx_texture_t *texture, int32_t x, int32_t y);
-uint32_t get_image_color(mlx_image_t *image, int32_t x, int32_t y);
+void            run_fdf(t_mlx *m, t_map *mp);
+void            skip_line(int fd);
+int             parse_map(char *file, t_map *mp);
+void            cleanup_exit(t_mlx *m, int r);
+int             free_strarr(char **arr);
+int             alloc_map(t_map *mp);
+int             free_ret(void *p, int r);
+int             free_grid(t_map *mp, int r);
 
-// high level
-void determine_min_max_height(t_fdf *fdf);
-void apply_vertex_colors(t_fdf *fdf);
+unsigned int    calc_ip(long s, long e, long n, long mx);
+int             calc_dist(t_point p1, t_point p2);
 
-// rotation
-void adjust_rotation(t_vec2 movement, t_fdf *fdf);
+unsigned int    calc_grad(t_point p1, t_point p2, int tl);
+void            set_pt_clr(t_point *p, t_map mp);
+void            fill_bg(t_mlx *m, unsigned int clr);
 
-// event handler
-void handle_cursor_event(double cursor_x, double cursor_y, void *param);
-void handle_scroll_event(double offset, double scroll, void *param);
-void handle_mouse_event(mouse_key button, action action, modifier_key modifier, void *param);
-void handle_resize_event(int32_t width, int32_t height, void *param);
-void handle_key_event(mlx_key_data_t key_data, void *param);
+void            draw_line(mlx_image_t *img, t_point p1, t_point p2);
+void            bresenham_algorithm(mlx_image_t *img, t_point p1, t_point p2);
 
-// initializer
-void initialize_hooks(t_fdf *fdf);
-void initialize_settings(t_fdf *fdf);
-void initialize_mlx(t_fdf *fdf);
-void initialize_fdf(char *file_path, t_fdf *fdf);
-void initialize_mesh(int argc, char **argv, t_fdf *fdf);
-void initialize_skybox(t_fdf *fdf);
-void initialize_from_png(char *heightmap_file, char *colormap_file, t_fdf *fdf);
+void            handle_key(mlx_key_data_t kd, void *prm);
+void            manage_keys(t_mlx *m);
 
-// wireframe
-t_vec3 transform_object_to_world(t_vec3 object, t_fdf *fdf);
-void calculate_directions(t_fdf *fdf);
-void adjust_mesh_to_center(t_fdf *fdf);
-void project_vertices_to_canvas(t_fdf *fdf);
+void            init_cam(t_mlx *m);
+void            apply_transformations(t_mlx *m);
 
-// render
-void render_mesh(t_fdf *fdf);
-void render_mesh_dotted_edges(t_fdf *fdf);
-void render_mesh_faces(t_fdf *fdf);
-void render_mesh_edges(t_fdf *fdf);
-void render_mesh_vertices(t_fdf *fdf);
-void put_dot(mlx_image_t *image, t_pixel pixel, uint16_t dot_size, t_fdf *fdf);
-void draw_dotted_line(t_vertex vertex_a, t_vertex vertex_b, uint16_t dot_size, t_fdf *fdf);
-void draw_line(t_pixel start, t_pixel end, uint8_t thickness, t_fdf *fdf);
-void draw_pixel_line(t_pixel start, t_pixel end, uint8_t thickness, t_fdf *fdf);
-void draw_anti_aliased_line(t_pixel start, t_pixel end, t_fdf *fdf);
-void draw_anti_aliased_line_segment(t_vec2 position, t_pixel pixel, t_fdf *fdf);
-void draw_pixel(mlx_image_t *image, t_pixel pixel, uint8_t size, t_fdf *fdf);
-void draw_large_pixel(mlx_image_t *image, t_pixel pixel, uint8_t size, t_fdf *fdf);
-void render_face(t_face face, t_fdf *fdf);
-void render_triangle(t_triangle triangle, t_fdf *fdf);
-void render_triangle_pixel(t_pixel pixel, t_triangle triangle, t_fdf *fdf);
-void render_background(t_fdf *fdf);
-void render_skybox(t_fdf *fdf);
+void            frame_hook(void *param);
+void            draw_grid(t_mlx *m, t_map *map);
 
-// utils
-t_vec3 add_vectors(t_vec3 vector_a, t_vec3 vector_b);
-double calculate_distance(t_ivec2 point1, t_ivec2 point2);
-double calculate_edge_function(t_ivec2 vertex_a, t_ivec2 vertex_b, t_ivec2 point);
-t_vec2 interpolate_position(t_ivec2 start, t_ivec2 end, double factor);
-bool is_fdf_file(char *file_path);
-bool is_png_file(char *file_path);
-void display_fps(t_fdf *fdf);
-void main_render_loop(void *param);
-
-// validation
-bool is_numeric_string(char *string);
-bool check_range(char *number, char *min, char *max);
-void validate_map_value(char *value, t_fdf *fdf);
-
-// skybox
-void load_skybox_textures(uint8_t skybox_id, t_fdf *fdf);
-void verify_texture_allocation(mlx_texture_t *texture, char *path, t_fdf *fdf);
-void subdivide_skybox_face(mlx_texture_t *texture, t_vertex *vertices, t_fdf *fdf);
-void project_skybox_vertices(t_vertex *vertices, t_fdf *fdf);
-void reset_depth_map(t_fdf *fdf);
-void adjust_canvas_brightness(double factor, t_fdf *fdf);
-
-// error handling
-void exit_program(char *error_message, t_fdf *fdf);
-void free_skybox_textures(t_fdf *fdf);
+void            show_menu(t_mlx *m);
+void            move(t_mlx *mlx, t_dir dir);
 
 #endif

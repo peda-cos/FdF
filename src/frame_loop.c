@@ -1,31 +1,28 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   math_utils.c                                       :+:      :+:    :+:   */
+/*   frame_loop.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/15 20:22:22 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/13 01:24:43 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/12/13 12:00:00 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/13 00:40:30 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/fdf.h"
 
-unsigned int	calc_ip(long s, long e, long n, long mx)
+void apply_transformations(t_mlx *m)
 {
-	double	r;
-
-	if (mx == 0)
-		return (s);
-	r = (double)n / (double)mx;
-	return ((unsigned int)((unsigned long)(s + r * (e - s) + 0.5)));
+	manage_keys(m);
+	fill_bg(m, g_bg_c);
+	draw_grid(m, m->map);
 }
 
-int	calc_dist(t_point p1, t_point p2)
+void frame_hook(void *param)
 {
-	int	r;
+	t_mlx *m;
 
-	r = sqrt(pow(p2.x - p1.x, 2) + pow(p2.y - p1.y, 2));
-	return (r);
+	m = (t_mlx *)param;
+	apply_transformations(m);
 }
