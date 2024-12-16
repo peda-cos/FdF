@@ -1,13 +1,13 @@
 # **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:   #
-#                                                     +:+ +:+         +:+      #
-#    By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2024/11/15 05:35:59 by peda-cos          #+#    #+#              #
-#    Updated: 2024/12/13 12:00:00 by peda-cos         ###   ########.fr        #
-#                                                                              #
+#									      #
+#							 :::      ::::::::    #
+#    Makefile					   :+:      :+:    :+:    #
+#						     +:+ +:+	 +:+      #
+#    By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+	 #
+#						 +#+#+#+#+#+   +#+	    #
+#    Created: 2024/12/16 23:00:00 by peda-cos	  #+#    #+#	      #
+#    Updated: 2024/12/16 23:59:59 by peda-cos	 ###   ########.fr	#
+#									      #
 # **************************************************************************** #
 
 NAME        =   fdf
@@ -21,19 +21,22 @@ MLX42       =   $(MLX42_DIR)/build/libmlx42.a
 INC_DIR     =   inc
 SRC_DIR     =   src
 
-HEADERS     =   -I $(INC_DIR) -I $(MLX42_DIR)/include -I $(LIBFT_DIR)
+HEADERS     =   -I ./ -I $(MLX42_DIR)/include -I $(LIBFT_DIR)
 
-SRC         =   $(SRC_DIR)/color_functions.c $(SRC_DIR)/fdf.c \
-				$(SRC_DIR)/key_hook.c $(SRC_DIR)/math_utils.c $(SRC_DIR)/move.c \
-				$(SRC_DIR)/zoom.c $(SRC_DIR)/draw_line.c \
-				$(SRC_DIR)/main.c $(SRC_DIR)/memory_functions.c \
-				$(SRC_DIR)/parsing.c
+SRCS = main.c \
+	   fdf.c \
+	   parsing.c \
+	   draw_grid.c \
+	   draw_line.c \
+	   color_functions.c \
+	   zoom.c \
+	   move.c \
+	   key_hook.c \
+	   memory_functions.c \
+	   math_utils.c \
+	   helpers.c
 
-OBJ         =   $(SRC:%.c=%.o)
-
-CC          =   cc
-CFLAGS      =   -Wall -Wextra -Werror -Ofast $(HEADERS)
-LDFLAGS     =   -lm -ldl -lglfw -pthread -flto
+OBJ = $(SRCS:.c=.o)
 
 all: $(LIBFT) $(MLX42) $(NAME)
 
