@@ -1,5 +1,5 @@
 NAME        = fdf
-CC          = gcc
+CC          = cc
 CFLAGS      = -Wall -Wextra -Werror
 LIBFT_DIR   = lib/libft
 MLX42_DIR   = lib/MLX42
