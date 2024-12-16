@@ -4,7 +4,7 @@ CFLAGS      = -Wall -Wextra -Werror
 LIBFT_DIR   = lib/libft
 MLX42_DIR   = lib/MLX42
 LIBFT       = $(LIBFT_DIR)/libft.a
-MLX42       = $(MLX42_DIR)/build/libmlx42.a
+MLX42       = $(MLX42_DIR)/build/libmlx42.a -ldl -lglfw -pthread -lm
 HEADERS     = -I $(LIBFT_DIR) -I $(MLX42_DIR)/include
 SRCS        = main.c fdf.c parsing.c draw_grid.c draw_line.c color_functions.c \
               zoom.c move.c key_hook.c memory_functions.c math_utils.c helpers.c \
