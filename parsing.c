@@ -2,11 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   parsing.c                                          :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+     */
-/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+      
+/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+
 	+#+         */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+            */
 /*   Created: 2024/11/15 20:24:20 by peda-cos          #+#    #+#              */
 /*   Updated: 2024/12/17 00:15:00 by peda-cos         ###   ########.fr        */

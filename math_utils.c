@@ -2,11 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   math_utils.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+      */
-/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+      
+/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+
 	+#+        */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+            */
 /*   Created: 2024/11/15 20:22:22 by peda-cos          #+#    #+#              */
 /*   Updated: 2024/12/16 21:15:00 by peda-cos         ###   ########.fr        */

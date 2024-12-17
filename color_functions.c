@@ -6,13 +6,13 @@
 
 /*   color_functions.c                                  :+:      :+:    :+:   */
 
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+     */
 
-/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+      
+/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+
 	+#+        */
 
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+            */
 
 /*   Created: 2024/11/15 20:20:24 by peda-cos          #+#    #+#              */
@@ -28,12 +28,9 @@
 void	set_point_color(t_point *point, t_map map)
 
 {
-
 	t_color col;
 
 	int delta_value;
-
-
 
 	delta_value = map.max - point->value;
 
@@ -50,23 +47,17 @@ void	set_point_color(t_point *point, t_map map)
 			map.range);
 
 	point->color = (col.r << 24) | (col.g << 16) | (col.b << 8) | col.a;
-
 }
-
-
 
 unsigned int	calculate_gradient(t_point point1, t_point point2,
 		int total_length)
 
 {
-
 	t_color col;
 
 	unsigned int color;
 
 	int current_length;
-
-
 
 	current_length = calculate_distance(point1, point2);
 
@@ -85,42 +76,30 @@ unsigned int	calculate_gradient(t_point point1, t_point point2,
 	color = (col.r << 24) | (col.g << 16) | (col.b << 8) | col.a;
 
 	return (color);
-
 }
-
-
 
 void	fill_background(t_mlx *mlx_instance, unsigned int color)
 
 {
-
 	uint32_t y;
 
 	uint32_t x;
-
-
 
 	y = 0;
 
 	while (y < (uint32_t)g_resolution_y)
 
 	{
-
 		x = 0;
 
 		while (x < (uint32_t)g_resolution_x)
 
 		{
-
 			mlx_put_pixel(mlx_instance->img, x, y, color);
 
 			x++;
-
 		}
 
 		y++;
-
 	}
-
 }
-

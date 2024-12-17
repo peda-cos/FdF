@@ -4,7 +4,7 @@
 /*   draw_grid.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+            */
 /*   Created: 2024/12/16 23:30:00 by peda-cos          #+#    #+#              */
 /*   Updated: 2024/12/17 00:40:00 by peda-cos         ###   ########.fr        */

@@ -2,11 +2,11 @@
 /*                                                                            */
 /*                                                        :::      ::::::::   */
 /*   fdf.c                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+        
+/*                                                    +:+ +:+
 	+:+     */
-/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+      
+/*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+
 	+#+         */
-/*                                                +#+#+#+#+#+  
+/*                                                +#+#+#+#+#+
 	+#+            */
 /*   Created: 2024/11/15 20:20:59 by peda-cos          #+#    #+#              */
 /*   Updated: 2024/12/17 00:30:00 by peda-cos         ###   ########.fr        */
