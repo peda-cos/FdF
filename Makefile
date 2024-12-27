@@ -1,52 +1,39 @@
-NAME        = fdf
-CC          = cc
-CFLAGS      = -Wall -Wextra -Werror
+NAME = fdf
+CC = cc
+CFLAGS = -Wextra -Wall -Werror -Wunreachable-code -Ofast -g
+HEADERS = -I ./src -I ./lib/MLX42/include -I ./lib/libft
+LIBFT = ./lib/libft/libft.a
+MLX42 = ./lib/MLX42/build
+LIBMLX42 = $(MLX42)/libmlx42.a
+LIBS = $(LIBMLX42) -ldl -lglfw -pthread -lm
 
-LIBFT_DIR   = lib/libft
-LIBFT       = $(LIBFT_DIR)/libft.a
+SRCS = src/color_utils.c src/line_drawing.c src/line_parameters.c src/map_manager.c src/parse_map_utils.c src/line_drawing_utils.c src/main.c src/parse_map.c src/transformations.c
 
-MLX42_DIR   = lib/MLX42
-MLX42       = $(MLX42_DIR)/build/libmlx42.a -ldl -lglfw -pthread -lm
+OBJS = $(SRCS:.c=.o)
 
-HEADERS     = -I $(LIBFT_DIR) -I $(MLX42_DIR)/include -I ./src
-
-SRCS        = src/color_utils.c \
-              src/line_drawing.c \
-              src/line_parameters.c \
-              src/map_manager.c \
-              src/parse_map_utils.c \
-              src/line_drawing_utils.c \
-              src/main.c \
-              src/parse_map.c \
-              src/transformations.c
-
-OBJS        = $(SRCS:.c=.o)
-
-all: $(LIBFT) $(MLX42) $(NAME)
-
-$(NAME): $(OBJS) $(LIBFT)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(MLX42) -o $(NAME) $(HEADERS)
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@ $(HEADERS)
+all: libmlx $(LIBFT) $(NAME)
 
 $(LIBFT):
-	@$(MAKE) -C $(LIBFT_DIR)
+	@make all -C ./lib/libft
 
-$(MLX42):
-	@cd lib && git clone https://github.com/codam-coding-college/MLX42.git || true
-	@cmake -S $(MLX42_DIR) -B $(MLX42_DIR)/build
-	@$(MAKE) -C $(MLX42_DIR)/build -j4
+libmlx:
+	@cmake -DDEBUG=1 ./lib/MLX42 -B $(MLX42) && make -C $(MLX42) -j4
+
+$(NAME): $(OBJS)
+	@$(CC) $(CFLAGS) $(OBJS) $(LIBFT) $(LIBS) $(HEADERS) -o $(NAME)
+
+%.o: %.c
+	@$(CC) $(CFLAGS) -c $< -o $@ $(HEADERS)
 
 clean:
-	@$(MAKE) -C $(LIBFT_DIR) clean
-	@rm -f $(OBJS)
+	@rm -rf $(OBJS)
+	@make clean -C ./lib/libft
+	@rm -rf $(MLX42)
 
 fclean: clean
-	@$(MAKE) -C $(LIBFT_DIR) fclean
-	@rm -f $(NAME)
-	@rm -rf $(MLX42_DIR)
+	@rm -rf $(NAME)
+	@make fclean -C ./lib/libft
 
 re: fclean all
 
-.PHONY: all clean fclean re
+.PHONY: all clean fclean re libmlx
