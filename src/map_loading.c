@@ -6,7 +6,7 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/18 19:57:17 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/28 21:41:24 by peda-cos         ###   ########.fr       */
+/*   Updated: 2024/12/29 15:34:52 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,6 @@ void	load_map(char *file, t_map *map)
 
 	file_descriptor = validate_file_extension(file);
 	line = get_next_line(file_descriptor);
-	ft_printf("\nLoading map -> \n");
 	while (line)
 	{
 		columns = count_columns(line, ' ');
@@ -50,7 +49,6 @@ void	fill_map(char *file, t_map *map)
 	line_index = 0;
 	file_descriptor = open(file, O_RDONLY);
 	line = get_next_line(file_descriptor);
-	ft_printf("\nFilling map points ->\n");
 	while (line)
 	{
 		parse_line_into_points(line, map, line_index);
