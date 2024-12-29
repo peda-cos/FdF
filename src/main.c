@@ -5,51 +5,33 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/27 05:33:37 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/27 05:34:26 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/11/15 20:02:04 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/28 21:36:41 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
 
-int	main(int argc, char *argv[])
+int32_t	main(int argc, char **argv)
 {
-	mlx_t		*mlx_ptr;
-	mlx_image_t	*image;
-	int32_t		image_id;
+	t_fdf	fdf;
 
 	if (argc != 2)
-	{
-		perror("Wrong number of arguments.");
-		return (0);
-	}
-	mlx_ptr = mlx_init(WIDTH, HEIGHT, "FdF", true);
-	if (!mlx_ptr)
-		print_error_and_exit();
-	image = mlx_new_image(mlx_ptr, 1920, 1080);
-	if (handle_map(mlx_ptr, image, argv[1]) == EXIT_FAILURE)
-		return (EXIT_FAILURE);
-	image_id = mlx_image_to_window(mlx_ptr, image, 0, 0);
-	if (!image || image_id < 0)
-		print_error_and_exit();
-	mlx_loop_hook(mlx_ptr, handle_mlx_events, mlx_ptr);
-	mlx_loop(mlx_ptr);
-	mlx_delete_image(mlx_ptr, image);
-	mlx_terminate(mlx_ptr);
-	return (EXIT_SUCCESS);
-}
-
-void	handle_mlx_events(void *param)
-{
-	mlx_t	*mlx_ptr;
-
-	mlx_ptr = (mlx_t *)param;
-	if (mlx_is_key_down(mlx_ptr, MLX_KEY_ESCAPE))
-		mlx_close_window(mlx_ptr);
-}
-
-void	print_error_and_exit(void)
-{
-	perror(mlx_strerror(mlx_errno));
-	exit(EXIT_FAILURE);
+		return (1);
+	fdf.map = initialize_map();
+	load_map(argv[1], fdf.map);
+	fdf.mlx_instance = mlx_init(WIDTH, HEIGHT, "FdF - peda-cos", true);
+	if (!fdf.mlx_instance)
+		exit(EXIT_FAILURE);
+	fdf.image = mlx_new_image(fdf.mlx_instance, WIDTH, HEIGHT);
+	if (!fdf.image)
+		exit(EXIT_FAILURE);
+	initialize_camera(&fdf);
+	render_map(&fdf);
+	set_hooks(&fdf);
+	mlx_loop(fdf.mlx_instance);
+	mlx_terminate(fdf.mlx_instance);
+	free(fdf.camera);
+	free_map(fdf.map);
+	return (0);
 }

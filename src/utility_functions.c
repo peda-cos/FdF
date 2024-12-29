@@ -1,26 +1,38 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isspace.c                                       :+:      :+:    :+:   */
+/*   utility_functions.c                                :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/28 20:13:19 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/28 20:21:58 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/11/20 20:01:38 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/28 21:37:38 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_isspace(int c)
+#include "fdf.h"
+
+void	free_string_array(char **array)
 {
-	return (c == ' ' || (c >= '\t' && c <= '\r'));
+	int	i;
+
+	i = 0;
+	while (array && array[i])
+	{
+		free(array[i]);
+		i++;
+	}
+	free(array);
 }
 
-int	ft_isupper(int c)
+void	exit_with_error(char *error_message)
 {
-	return (c >= 'A' && c <= 'Z');
-}
-
-int	ft_islower(int c)
-{
-	return (c >= 'a' && c <= 'z');
+	if (errno == 0)
+	{
+		ft_putstr_fd("\n", 2);
+		ft_putendl_fd(error_message, 2);
+	}
+	else
+		perror(error_message);
+	exit(1);
 }

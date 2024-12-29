@@ -1,26 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_isspace.c                                       :+:      :+:    :+:   */
+/*   ft_putendl_fd.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/28 20:13:19 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/28 20:21:58 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/10/05 12:32:15 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/28 20:30:39 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-int	ft_isspace(int c)
-{
-	return (c == ' ' || (c >= '\t' && c <= '\r'));
-}
+#include "libft.h"
 
-int	ft_isupper(int c)
+void	ft_putendl_fd(char *s, int fd)
 {
-	return (c >= 'A' && c <= 'Z');
-}
-
-int	ft_islower(int c)
-{
-	return (c >= 'a' && c <= 'z');
+	if (!s)
+		return ;
+	ft_putstr_fd(s, fd);
+	ft_putchar_fd('\n', fd);
 }

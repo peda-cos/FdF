@@ -1,7 +1,7 @@
 NAME        = fdf
 
 CC          = cc
-CFLAGS      = -Wextra -Wall -Werror -Wunreachable-code -Ofast
+CFLAGS      = -Wextra -Wall -Werror -Wunreachable-code -Ofast -g
 
 INCLUDES    = -I ./src -I ./lib/MLX42/include -I ./lib/libft
 LIBFT_DIR   = ./lib/libft
@@ -11,16 +11,7 @@ MLX42_BUILD = $(MLX42_DIR)/build
 LIBMLX42    = $(MLX42_BUILD)/libmlx42.a
 LIBS        = $(LIBMLX42) -ldl -lglfw -pthread -lm
 
-SRCS = src/color_utils.c \
-       src/line_drawing.c \
-       src/line_parameters.c \
-       src/map_manager.c \
-       src/parse_map_utils.c \
-       src/line_drawing_utils.c \
-       src/main.c \
-       src/parse_map.c \
-       src/transformations.c
-
+SRCS = src/camera_controls.c src/color_processing.c src/drawing_helpers.c src/input_hooks.c src/main.c src/map_loading.c src/map_management.c src/map_rendering.c src/utility_functions.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)

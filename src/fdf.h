@@ -5,147 +5,111 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/12/27 05:32:22 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/27 05:33:30 by peda-cos         ###   ########.fr       */
+/*   Created: 2024/11/15 20:02:26 by peda-cos          #+#    #+#             */
+/*   Updated: 2024/12/28 21:41:44 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef FDF_H
 # define FDF_H
 
-# include <unistd.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <stdbool.h>
-# include <math.h>
-# include <fcntl.h>
-# include "../lib/libft/libft.h"
 # include "../lib/MLX42/include/MLX42/MLX42.h"
+# include "../lib/libft/libft.h"
+# include <errno.h>
+# include <fcntl.h>
+# include <limits.h>
+# include <math.h>
+# include <stdio.h>
+# include <string.h>
 
-# define PI 3.14159265359
-# define WIDTH 1280
-# define HEIGHT 720
+# define WIDTH 1200
+# define HEIGHT 1000
+# define TRANSLATE_STEP 5
+
+# define ERROR_FILE_EXTENSION "ERROR: The file must have a .fdf extension."
+# define ERROR_FILE_OPEN "ERROR: Unable to open the specified file."
+# define ERROR_MAP_WIDTH "ERROR: All map lines must have the same width."
+# define ERROR_MAP_FORMAT "ERROR: The map format is invalid."
+# define ERROR_MAP_EMPTY "ERROR: The map file is empty."
+
+typedef struct s_point
+{
+	int				x;
+	int				y;
+	int				z;
+	uint32_t		color;
+}					t_point;
 
 typedef struct s_map
 {
-	float	x;
-	float	y;
-	int		z;
-	int		color;
-}	t_map;
+	unsigned int	width;
+	unsigned int	height;
+	unsigned int	total_points;
+	int				min_z;
+	int				max_z;
+	t_point			*points;
+}					t_map;
 
-typedef struct s_color
+typedef struct s_camera
 {
-	int	r;
-	int	g;
-	int	b;
-}	t_color;
+	int				projection_type;
+	float			zoom_level;
+	double			z_scale_factor;
+	int				x_offset;
+	int				y_offset;
+}					t_camera;
 
-typedef struct s_draw_parameters
+typedef struct s_fdf
 {
-	int		delta_x;
-	int		delta_y;
-	int		step_x;
-	int		step_y;
-	int		decision;
-	float	current_x;
-	float	current_y;
-}	t_draw_parameters;
+	t_map			*map;
+	t_camera		*camera;
+	mlx_t			*mlx_instance;
+	mlx_image_t		*image;
+}					t_fdf;
 
-typedef struct s_map_dimensions
+typedef struct s_bresenham
 {
-	size_t	width;
-	size_t	height;
-}	t_map_dimensions;
+	int				delta_x;
+	int				delta_y;
+	int				step_x;
+	int				step_y;
+	int				error;
+	int				initial_x;
+	int				initial_y;
+}					t_bresenham;
 
-typedef struct s_map_offset
+enum				e_projection_types
 {
-	int	start_x;
-	int	start_y;
-	int	scaling_interval;
-}	t_map_offset;
+	ISOMETRIC,
+};
 
-typedef struct s_position
-{
-	unsigned int	x;
-	unsigned int	y;
-}	t_position;
-
-typedef struct s_line_coordinates
-{
-	float	start_x;
-	float	start_y;
-	float	end_x;
-	float	end_y;
-}	t_line_coordinates;
-
-/*
-**  Prototipagem das funções.
-*/
-
-/* main.c */
-int			main(int argc, char *argv[]);
-void		handle_mlx_events(void *param);
-void		print_error_and_exit(void);
-
-/* map_manager.c */
-int			read_and_draw_map(mlx_image_t *image, char *file_path);
-int			handle_map(mlx_t *mlx_ptr, mlx_image_t *image, char *file_path);
-
-/* parse_map.c */
-size_t		get_file_line_count(char *file_path);
-char		**read_file_lines(char *file_path, size_t line_count);
-t_map		**parse_map_data(char **map_lines, size_t height,
-				t_map_dimensions *map_dims);
-void		free_string_array(char **ptr, size_t size);
-void		free_map_data(t_map **map_data, size_t height);
-
-/* parse_map_utils.c */
-void		fill_map_element(t_map *map_element, char *value,
-				unsigned int x_idx, unsigned int y_idx);
-bool		check_map_columns(char **values, t_map_dimensions *map_dims,
-				unsigned int current_row);
-bool		allocate_and_fill_map_row(char **values, t_map **map_data,
-				unsigned int current_row, t_map_dimensions *map_dims);
-bool		process_map_row(t_map **map_data, t_map_dimensions *map_dims,
-				char **map_lines, unsigned int current_row);
-size_t		get_string_array_width(char **values);
-
-/* line_drawing.c */
-void		draw_shallow_line(t_draw_parameters *draw_params,
-				mlx_image_t *image, int start_color, int end_color);
-void		draw_steep_line(t_draw_parameters *draw_params,
-				mlx_image_t *image, int start_color, int end_color);
-void		draw_map(mlx_image_t *image, t_map **map_data,
-				t_map_dimensions *map_dims);
-
-/* line_drawing_utils.c */
-void		draw_diagonal_line(mlx_image_t *image,
-				t_draw_parameters *draw_params, int start_color,
-				int end_color);
-void		draw_horizontal_line(mlx_image_t *image, t_map **map_data,
-				t_draw_parameters *draw_params, t_position *pos);
-void		draw_vertical_line(mlx_image_t *image, t_map **map_data,
-				t_draw_parameters *draw_params, t_position *pos);
-
-/* line_parameters.c */
-void		set_line_parameters(t_draw_parameters *draw_params,
-				t_line_coordinates *coords);
-void		set_map_offset(t_map_offset *offset, t_map_dimensions *map_dims);
-int			get_step_direction(float start_point, float end_point);
-int			get_axis_difference(float start_point, float end_point);
-
-/* transformations.c */
-void		rescale_map(t_map **map_data, t_map_dimensions *map_dims);
-void		zoom_map(t_map **map_data, t_map_offset *offset,
-				unsigned int x_idx, unsigned int y_idx);
-float		get_x_derivative(float x_val, float y_val, int z_val);
-float		get_y_derivative(float x_val, float y_val, int z_val);
-
-/* color_utils.c */
-int			get_color_gradient(int start_color, int end_color,
-				int position, int length);
-void		set_default_color(int *color_ref, int z_val);
-int			parse_hex_string(const char *hex_str);
+void				initialize_camera(t_fdf *fdf);
+void				reset_camera(t_fdf *fdf);
+t_point				project_point(t_point point, t_fdf *fdf);
+t_map				*initialize_map(void);
+void				free_map(t_map *map);
+int					count_columns(char *line, char delimiter);
+int					validate_file_extension(char *file);
+void				load_map(char *file, t_map *map);
+void				fill_map(char *file, t_map *map);
+void				parse_line_into_points(char *line, t_map *map,
+						int line_index);
+int					linear_interpolation(int start, int end, float ratio);
+uint32_t			interpolate_color(t_point start, t_point end,
+						t_bresenham bresenham_state);
+uint32_t			convert_hex_to_rgba(unsigned int hex_value);
+uint32_t			parse_color(char *line);
+void				initialize_bresenham(t_point start, t_point end,
+						t_bresenham *bresenham_state);
+int					is_within_pixel_boundaries(t_point *point);
+void				clear_image_background(mlx_image_t *image);
+void				render_map(t_fdf *fdf);
+void				draw_line(t_point start, t_point end, mlx_image_t *image);
+void				set_hooks(t_fdf *fdf);
+void				handle_exit(void *param);
+void				handle_translation(void *param);
+void				handle_zoom(void *param);
+void				free_string_array(char **array);
+void				exit_with_error(char *error_message);
 
 #endif
