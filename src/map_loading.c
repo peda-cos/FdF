@@ -6,7 +6,7 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/18 19:57:17 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/29 15:34:52 by peda-cos         ###   ########.fr       */
+/*   Updated: 2024/12/29 23:39:06 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,6 @@ void	fill_map(char *file, t_map *map)
 		line = get_next_line(file_descriptor);
 		if (!line)
 			break ;
-		ft_printf("\n%s", line);
 		line_index++;
 	}
 	free(line);

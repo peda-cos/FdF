@@ -6,7 +6,7 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/16 19:58:18 by peda-cos          #+#    #+#             */
-/*   Updated: 2024/12/29 15:34:26 by peda-cos         ###   ########.fr       */
+/*   Updated: 2024/12/29 23:41:16 by peda-cos         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,6 @@ uint32_t	parse_color(char *line)
 		free_string_array(tokens);
 	}
 	else
-		color_value = convert_hex_to_rgba(0xebdbb2);
+		color_value = convert_hex_to_rgba(0xFFFFFF);
 	return (color_value);
 }
