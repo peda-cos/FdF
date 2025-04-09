@@ -1,4 +1,4 @@
-# Guia Completo de Desenvolvimento do FdF
+# Guia de Desenvolvimento do FdF
 
 ## Introdução
 
