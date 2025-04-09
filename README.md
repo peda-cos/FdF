@@ -498,4 +498,4 @@ Para expandir este projeto, você poderia considerar:
 - Implementar ocultação de faces (não renderizar linhas que estariam atrás de outras)
 - Adicionar texturas ou iluminação mais sofisticada
 
-Este guia oferece uma visão detalhada da implementação do FdF, explicando as decisões de design e os algoritmos utilizados. Compreender este código fornece uma base sólida para outros projetos de visualização 3D.
+Este guia oferece uma visão detalhada da implementação do FdF, explicando as decisões de design e os algoritmos utilizados.
