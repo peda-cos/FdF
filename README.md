@@ -1,501 +1,357 @@
-# Mini-Guia de Desenvolvimento do FdF
+# FdF - Fil de Fer (Wireframe Renderer)
 
-## Introdução
+A 3D wireframe visualization project that renders heightmaps in isometric projection. This project reads `.fdf` map files containing 3D coordinates and displays them as beautiful wireframe models with real-time camera controls.
 
-O FdF (Fil de Fer - "moldura de arame" em francês) é um projeto que transforma arquivos de mapa contendo coordenadas em representações tridimensionais wireframe. Este guia explora a implementação que você desenvolveu, explicando os conceitos fundamentais, algoritmos e detalhes técnicos para quem deseja compreender ou replicar este tipo de visualizador 3D.
+![42 School Project](https://img.shields.io/badge/42-School_Project-000000?style=flat-square&logo=42)
+![Language](https://img.shields.io/badge/Language-C-blue?style=flat-square)
+![Graphics](https://img.shields.io/badge/Graphics-MLX42-green?style=flat-square)
 
-## Índice
+## 📋 Table of Contents
 
-1. [Estrutura do Projeto](#estrutura-do-projeto)
-2. [Biblioteca MLX42](#biblioteca-mlx42)
-3. [Estruturas de Dados](#estruturas-de-dados)
-4. [Carregamento do Mapa](#carregamento-do-mapa)
-5. [Projeção Isométrica](#projeção-isométrica)
-6. [Algoritmo de Bresenham](#algoritmo-de-bresenham)
-7. [Sistema de Cores](#sistema-de-cores)
-8. [Controles da Câmera](#controles-da-câmera)
-9. [Gerenciamento de Memória](#gerenciamento-de-memória)
-10. [Conclusão](#conclusão)
+- [About](#about)
+- [Technology Stack](#technology-stack)
+- [Project Architecture](#project-architecture)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Key Features](#key-features)
+- [Usage](#usage)
+- [Controls](#controls)
+- [Map File Format](#map-file-format)
+- [Development Workflow](#development-workflow)
+- [Coding Standards](#coding-standards)
+- [License](#license)
 
-## Estrutura do Projeto
+## 📖 About
 
-O projeto está organizado em módulos bem definidos:
+**FdF** (Fil de Fer, meaning "wireframe" in French) is a graphics project from the 42 School curriculum. The program takes a file representing a 3D landscape and renders it in isometric projection as a wireframe model. The visualization supports real-time interaction through keyboard controls for zooming, panning, and adjusting the Z-axis scale.
 
-```
-src/
-├── camera_controls.c  - Gerenciamento da câmera e projeção
-├── color_processing.c - Processamento e interpolação de cores
-├── drawing_helpers.c  - Funções auxiliares para desenho
-├── fdf.h              - Definições e estruturas principais
-├── input_hooks.c      - Manipulação de entradas do usuário
-├── main.c             - Ponto de entrada do programa
-├── map_loading.c      - Carregamento do arquivo de mapa
-├── map_management.c   - Gerenciamento da estrutura do mapa
-├── map_rendering.c    - Renderização do mapa
-└── utility_functions.c - Funções utilitárias diversas
-```
+## 🛠 Technology Stack
 
-Cada arquivo tem uma responsabilidade específica, seguindo o princípio de responsabilidade única, o que facilita a manutenção e compreensão do código.
+### Core Technologies
+- **Language:** C (C99)
+- **Graphics Library:** MLX42 (42's modern graphics library)
+- **Custom Library:** libft (custom C standard library implementation)
 
-## Biblioteca MLX42
+### Dependencies
+- **GLFW:** For window management and input handling
+- **OpenGL:** Via GLAD for rendering
+- **CMake:** For building MLX42
+- **pthread:** For multi-threading support
+- **Math library:** For trigonometric calculations
 
-A MLX42 é uma biblioteca gráfica simples usada para renderização. Vamos examinar as principais funções MLX utilizadas:
+### Build Tools
+- **Compiler:** gcc/clang with flags: `-Wall -Wextra -Werror -Wunreachable-code -Ofast`
+- **Build System:** Make
+- **Memory Management:** Valgrind (suppressions file included)
 
-### Inicialização e Configuração
+## 🏗 Project Architecture
+
+The FdF project follows a modular architecture with clear separation of concerns:
+
+### Core Components
+
+1. **Map Management** (`map_loading.c`, `map_management.c`)
+   - File parsing and validation
+   - Memory allocation for map data
+   - Z-coordinate tracking (min/max)
+
+2. **Camera System** (`camera_controls.c`)
+   - Isometric projection transformation
+   - Zoom and translation management
+   - Z-axis scaling for depth adjustment
+
+3. **Rendering Engine** (`map_rendering.c`, `drawing_helpers.c`)
+   - Bresenham line drawing algorithm
+   - Pixel-perfect line rendering
+   - Boundary checking
+
+4. **Color Processing** (`color_processing.c`)
+   - Hexadecimal color parsing
+   - Color interpolation for gradient effects
+   - RGBA conversion
+
+5. **Input Handling** (`input_hooks.c`)
+   - Keyboard event management
+   - Real-time camera control
+   - Window management
+
+### Data Structures
 
 ```c
-// Inicializa a biblioteca e cria uma janela
-fdf.mlx_instance = mlx_init(WIDTH, HEIGHT, "FdF - peda-cos", true);
-
-// Cria uma nova imagem para desenho
-fdf.image = mlx_new_image(fdf.mlx_instance, WIDTH, HEIGHT);
-
-// Coloca a imagem na janela
-mlx_image_to_window(fdf.mlx_instance, fdf.image, 0, 0);
-
-// Configura hooks para eventos de entrada
-mlx_loop_hook(fdf.mlx_instance, &handle_exit, fdf);
-
-// Inicia o loop principal
-mlx_loop(fdf.mlx_instance);
-
-// Finaliza a biblioteca
-mlx_terminate(fdf.mlx_instance);
-```
-
-### Desenho de Pixels
-
-```c
-// Desenha um pixel em coordenadas específicas com uma cor
-mlx_put_pixel(image, x, y, color);
-```
-
-É importante notar que a MLX42 usa um formato de cor RGBA onde a cor é representada como um número de 32 bits (`uint32_t`).
-
-## Estruturas de Dados
-
-O projeto utiliza várias estruturas para representar os diferentes componentes:
-
-### t_point
-
-```c
-typedef struct s_point
-{
-    int        x;
-    int        y;
-    int        z;
-    uint32_t   color;
+// Point representation with color
+typedef struct s_point {
+    int         x, y, z;
+    uint32_t    color;
 } t_point;
-```
 
-Esta estrutura representa um ponto no espaço 3D, com coordenadas (x, y, z) e um valor de cor.
-
-### t_map
-
-```c
-typedef struct s_map
-{
-    unsigned int    width;
-    unsigned int    height;
-    unsigned int    total_points;
-    int             min_z;
-    int             max_z;
+// Map structure
+typedef struct s_map {
+    unsigned int    width, height, total_points;
+    int             min_z, max_z;
     t_point         *points;
 } t_map;
-```
 
-Armazena informações sobre o mapa, incluindo dimensões e um array de pontos.
-
-### t_camera
-
-```c
-typedef struct s_camera
-{
-    int             projection_type;
-    float           zoom_level;
-    double          z_scale_factor;
-    int             x_offset;
-    int             y_offset;
+// Camera configuration
+typedef struct s_camera {
+    int     projection_type;
+    float   zoom_level;
+    double  z_scale_factor;
+    int     x_offset, y_offset;
 } t_camera;
-```
 
-Gerencia a visualização, incluindo tipo de projeção, zoom e deslocamentos.
-
-### t_fdf
-
-```c
-typedef struct s_fdf
-{
-    t_map           *map;
-    t_camera        *camera;
-    mlx_t           *mlx_instance;
-    mlx_image_t     *image;
+// Main FdF structure
+typedef struct s_fdf {
+    t_map       *map;
+    t_camera    *camera;
+    mlx_t       *mlx_instance;
+    mlx_image_t *image;
 } t_fdf;
 ```
 
-A estrutura principal que conecta todos os componentes.
+## 🚀 Getting Started
 
-### t_bresenham
+### Prerequisites
 
-```c
-typedef struct s_bresenham
-{
-    int             delta_x;
-    int             delta_y;
-    int             step_x;
-    int             step_y;
-    int             error;
-    int             initial_x;
-    int             initial_y;
-} t_bresenham;
+Ensure you have the following installed:
+
+```bash
+# Ubuntu/Debian
+sudo apt-get update
+sudo apt-get install build-essential cmake libglfw3-dev xorg-dev
+
+# macOS
+brew install cmake glfw
 ```
 
-Utilizada para implementar o algoritmo de Bresenham para desenho de linhas.
+### Installation
 
-## Carregamento do Mapa
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/peda-cos/FdF.git
+   cd FdF
+   ```
 
-O processo de carregamento do mapa é um dos componentes mais importantes. Vamos analisar como ele foi implementado:
+2. **Build the project:**
+   ```bash
+   make
+   ```
 
-1. **Validação do arquivo**: Verifica se o arquivo tem a extensão `.fdf` e pode ser aberto:
+   This will:
+   - Build the custom libft library
+   - Compile MLX42 using CMake
+   - Compile all FdF source files
+   - Link everything into the `fdf` executable
 
-```c
-int validate_file_extension(char *file)
-{
-    int file_descriptor;
+3. **Run the program:**
+   ```bash
+   ./fdf maps/42.fdf
+   ```
 
-    if (!ft_strnstr(file, ".fdf", ft_strlen(file)))
-        exit_with_error(ERROR_FILE_EXTENSION);
-    file_descriptor = open(file, O_RDONLY);
-    if (file_descriptor == -1)
-        exit_with_error(ERROR_FILE_OPEN);
-    return (file_descriptor);
-}
+### Cleaning
+
+```bash
+make clean   # Remove object files
+make fclean  # Remove object files and executable
+make re      # Rebuild everything from scratch
 ```
 
-2. **Leitura das dimensões**: Lê o arquivo para determinar a largura e altura do mapa:
+## 📁 Project Structure
 
-```c
-void load_map(char *file, t_map *map)
-{
-    // ... (código omitido)
-    while (line)
-    {
-        columns = count_columns(line, ' ');
-        free(line);
-        if (map->height == 0)
-            map->width = columns;
-        if (map->width != columns)
-            exit_with_error(ERROR_MAP_WIDTH);
-        map->height++;
-        line = get_next_line(file_descriptor);
-    }
-    // ... (código omitido)
-}
+```
+FdF/
+├── src/                    # Source files
+│   ├── main.c              # Entry point
+│   ├── fdf.h               # Main header file
+│   ├── camera_controls.c   # Camera transformations
+│   ├── color_processing.c  # Color handling
+│   ├── drawing_helpers.c   # Line drawing utilities
+│   ├── input_hooks.c       # Keyboard input
+│   ├── map_loading.c       # Map file parsing
+│   ├── map_management.c    # Map memory management
+│   ├── map_rendering.c     # Rendering logic
+│   └── utility_functions.c # Helper functions
+├── lib/                    # External libraries
+│   ├── libft/              # Custom C library
+│   └── MLX42/              # Graphics library
+├── maps/                   # Sample map files
+│   ├── 42.fdf
+│   ├── pyramide.fdf
+│   ├── mars.fdf
+│   └── ...
+├── Makefile              # Build configuration
+├── suppressions.supp     # Valgrind suppressions
+└── LICENSE               # MIT License
 ```
 
-3. **Parsing dos pontos**: Converte cada linha do arquivo em pontos 3D:
+## ✨ Key Features
 
-```c
-void parse_line_into_points(char *line, t_map *map, int line_index)
-{
-    // ... (código omitido)
-    while (columns[column_index] && columns[column_index][0] != '\n')
-    {
-        map->points[start_index + column_index].x = column_index;
-        map->points[start_index + column_index].y = line_index;
-        map->points[start_index + column_index].z = ft_atoi(columns[column_index]);
-        // ... (código omitido)
-        map->points[start_index + column_index].color = parse_color(columns[column_index]);
-        column_index++;
-    }
-    // ... (código omitido)
-}
+### Rendering
+- **Isometric Projection:** 3D visualization with proper depth perception
+- **Color Support:** Parse and display custom colors from map files
+- **Color Gradients:** Smooth color interpolation between points
+- **Wireframe Display:** Clean line-based rendering
+
+### Camera Controls
+- **Dynamic Zoom:** Smooth zooming in/out
+- **Translation:** Pan the view in all directions
+- **Z-Axis Scaling:** Adjust height/depth visualization
+- **Reset Function:** Return to default view instantly
+
+### Map Processing
+- **Flexible Format:** Support for various map sizes
+- **Color Parsing:** Hexadecimal color codes (e.g., `10,0xFF0000`)
+- **Validation:** Robust error checking for file format
+- **Memory Efficient:** Optimized memory allocation
+
+## 📖 Usage
+
+### Basic Usage
+
+```bash
+./fdf <map_file.fdf>
 ```
 
-Esta implementação lê o mapa em duas passagens:
-- A primeira para determinar as dimensões
-- A segunda para preencher a estrutura de pontos
+### Examples
 
-## Projeção Isométrica
+```bash
+# Render the 42 logo
+./fdf maps/42.fdf
 
-A projeção isométrica é o coração visual do FdF. Esta projeção transforma coordenadas 3D em coordenadas 2D para a tela, mantendo um ângulo igual entre os três eixos principais.
+# Render a pyramid
+./fdf maps/pyramide.fdf
 
-```c
-t_point project_point(t_point point, t_fdf *fdf)
-{
-    int transformed_x;
-    int transformed_y;
-
-    transformed_x = point.x;
-    transformed_y = point.y;
-    
-    // Aplica zoom e centraliza
-    point.x = point.x * fdf->camera->zoom_level - ((fdf->map->width * fdf->camera->zoom_level) / 2);
-    point.y = point.y * fdf->camera->zoom_level - ((fdf->map->height * fdf->camera->zoom_level) / 2);
-    point.z = point.z * fdf->camera->zoom_level / fdf->camera->z_scale_factor;
-    
-    // Aplicação da projeção isométrica
-    if (fdf->camera->projection_type == ISOMETRIC)
-    {
-        transformed_x = (point.x - point.y) * cos(M_PI / 6);
-        transformed_y = (-point.z + (point.x + point.y) * sin(M_PI / 6));
-    }
-    
-    // Posicionamento final na tela
-    point.x = transformed_x + WIDTH / 2 + fdf->camera->x_offset;
-    point.y = transformed_y + HEIGHT / 2 + fdf->camera->y_offset;
-    
-    return (point);
-}
+# Render Mars terrain
+./fdf maps/mars.fdf
 ```
 
-Os cálculos podem ser compreendidos da seguinte forma:
+## 🎮 Controls
 
-1. Primeiro, cada coordenada é multiplicada pelo nível de zoom e centralizada
-2. A altura (z) é ajustada pelo fator de escala z
-3. As fórmulas da projeção isométrica são aplicadas:
-   - `x_iso = (x - y) * cos(30°)`
-   - `y_iso = (-z + (x + y) * sin(30°))`
-4. Finalmente, o ponto é posicionado na tela, ajustando para o centro da janela e aplicando offsets da câmera
+| Key          | Action                          |
+| ------------ | ------------------------------- |
+| **ESC**      | Exit the program                |
+| **W**        | Move up                         |
+| **S**        | Move down                       |
+| **A**        | Move left                       |
+| **D**        | Move right                      |
+| **Keypad +** | Zoom in                         |
+| **Keypad -** | Zoom out                        |
+| **J**        | Increase Z-axis scale (flatten) |
+| **K**        | Decrease Z-axis scale (amplify) |
+| **R**        | Reset camera to default view    |
 
-O ângulo de 30° (π/6 radianos) é característico da projeção isométrica, criando um ângulo de 120° entre os eixos projetados.
+## 📄 Map File Format
 
-## Algoritmo de Bresenham
+Map files (`.fdf`) consist of numbers representing Z-coordinates (height) at each point:
 
-O algoritmo de Bresenham é usado para desenhar linhas eficientemente. A implementação utiliza uma abordagem incremental para determinar quais pixels devem ser coloridos:
-
-```c
-void draw_line(t_point start, t_point end, mlx_image_t *image)
-{
-    t_bresenham bresenham_state;
-
-    initialize_bresenham(start, end, &bresenham_state);
-    while (1)
-    {
-        if (start.x == end.x && start.y == end.y)
-            return;
-        if (is_within_pixel_boundaries(&start))
-            mlx_put_pixel(image, start.x, start.y, 
-                interpolate_color(start, end, bresenham_state));
-        
-        // Lógica principal do Bresenham
-        if (2 * bresenham_state.error >= bresenham_state.delta_y)
-        {
-            if (start.x == end.x)
-                return;
-            bresenham_state.error += bresenham_state.delta_y;
-            start.x += bresenham_state.step_x;
-        }
-        if (2 * bresenham_state.error <= bresenham_state.delta_x)
-        {
-            if (start.y == end.y)
-                return;
-            bresenham_state.error += bresenham_state.delta_x;
-            start.y += bresenham_state.step_y;
-        }
-    }
-}
+### Basic Format
+```
+0  0  0  0  0
+0  10 10 10 0
+0  10 20 10 0
+0  10 10 10 0
+0  0  0  0  0
 ```
 
-A inicialização do estado do Bresenham inclui cálculos importantes:
-
-```c
-void initialize_bresenham(t_point start, t_point end, t_bresenham *bresenham_state)
-{
-    if (start.x < end.x)
-        bresenham_state->step_x = 1;
-    else
-        bresenham_state->step_x = -1;
-    
-    if (start.y < end.y)
-        bresenham_state->step_y = 1;
-    else
-        bresenham_state->step_y = -1;
-    
-    bresenham_state->delta_x = abs(end.x - start.x);
-    bresenham_state->delta_y = -abs(end.y - start.y);
-    bresenham_state->error = bresenham_state->delta_x + bresenham_state->delta_y;
-    
-    bresenham_state->initial_x = start.x;
-    bresenham_state->initial_y = start.y;
-}
+### With Colors
+```
+0  0  0  0  0
+0  10,0xFF0000 10,0xFF0000 10,0xFF0000 0
+0  10,0x00FF00 20,0xFFFF00 10,0x00FF00 0
+0  10,0x0000FF 10,0x0000FF 10,0x0000FF 0
+0  0  0  0  0
 ```
 
-O algoritmo funciona determinando qual pixel escolher ao avançar pela linha, utilizando uma variável de "erro" para rastrear o desvio acumulado. Esta implementação escolhe habilmente o próximo pixel baseando-se no valor de erro atual, evitando cálculos em ponto flutuante caros.
+- Numbers represent Z-coordinates (height)
+- Optional hexadecimal color after comma (format: `z,0xRRGGBB`)
+- Spaces separate points on the same line
+- Each line must have the same number of points
 
-## Sistema de Cores
+## 🔄 Development Workflow
 
-O sistema de cores lida com a interpretação das cores do arquivo de mapa e a interpolação entre pontos.
+### Building
+1. Modify source files in `src/`
+2. Run `make` to compile
+3. Test with sample maps in `maps/`
 
-### Parsing de Cores
+### Debugging
+- Use `valgrind` with the provided suppressions file:
+  ```bash
+  valgrind --leak-check=full --suppressions=suppressions.supp ./fdf maps/42.fdf
+  ```
 
-```c
-uint32_t parse_color(char *line)
-{
-    char **tokens;
-    uint32_t color_value;
+### Adding Features
+1. Update `fdf.h` with new function prototypes
+2. Implement functions in appropriate source files
+3. Update Makefile if adding new files
+4. Test thoroughly with various map files
 
-    if (ft_strchr(line, ',') != NULL)
-    {
-        tokens = ft_split(line, ',');
-        if (tokens && tokens[1])
-        {
-            color_value = ft_atoi_base(tokens[1], "0123456789abcdef");
-            color_value = (color_value << 8) | 0xff; // Adiciona canal alpha
-        }
-        else
-            color_value = 0;
-        color_value = convert_hex_to_rgba(color_value);
-        free_string_array(tokens);
-    }
-    else
-        color_value = convert_hex_to_rgba(0xFFFFFF); // Branco por padrão
-    
-    return (color_value);
-}
+## 📝 Coding Standards
+
+This project follows the **42 School Norm**, which includes:
+
+### Code Style
+- **Indentation:** Tabs (displayed as 4 spaces)
+- **Line Length:** Maximum 80 characters
+- **Function Length:** Maximum 25 lines
+- **Functions per File:** Maximum 5 functions
+- **Parameters:** Maximum 4 parameters per function
+
+### Naming Conventions
+- **Functions:** `snake_case` with descriptive names
+- **Variables:** `snake_case`
+- **Structs:** `typedef struct s_name` with `t_name` alias
+- **Macros:** `UPPER_CASE`
+
+### Memory Management
+- No memory leaks permitted
+- All allocated memory must be freed
+- Proper error handling for allocations
+- Use of custom `ft_calloc` from libft
+
+### Forbidden
+- Global variables (except specific cases)
+- Use of `for` loops (while loops only)
+- Standard library functions (must use libft)
+- External libraries except MLX42 and allowed math functions
+
+## 🧪 Testing
+
+### Sample Maps
+The `maps/` directory contains various test cases:
+- **Simple shapes:** `pyramide.fdf`, `pyra.fdf`
+- **Complex terrain:** `mars.fdf`, `julia.fdf`
+- **Edge cases:** `elem-fract.fdf` (fractional coordinates)
+- **Color testing:** `elem-col.fdf` (with colors)
+
+### Validation Tests
+- Empty file handling
+- Invalid file extensions
+- Inconsistent line widths
+- Invalid number formats
+- Color parsing edge cases
+
+## 👤 Author
+
+**Pedro Monteiro** (peda-cos)
+- GitHub: [@peda-cos](https://github.com/peda-cos)
+- 42 Intra: peda-cos
+- Email: peda-cos@student.42sp.org.br
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+```
+Copyright (c) 2025 Pedro Monteiro
 ```
 
-### Interpolação de Cores
+## 🙏 Acknowledgments
 
-Para criar gradientes suaves entre pontos, uma função de interpolação linear é usada:
+- **42 School** for the project specifications
+- **MLX42** library developers for the modern graphics framework
+- **Codam Coding College** for MLX42 documentation and examples
+- **42 São Paulo** community for support and collaboration
 
-```c
-uint32_t interpolate_color(t_point start, t_point end, t_bresenham bresenham_state)
-{
-    int red, green, blue, alpha;
-    float ratio;
+---
 
-    if (start.color == end.color)
-        return (start.color);
-    
-    ratio = (float)(start.x - bresenham_state.initial_x) / 
-            (float)(end.x - bresenham_state.initial_x);
-    
-    red = linear_interpolation((start.color >> 24) & 0xFF,
-            (end.color >> 24) & 0xFF, ratio);
-    green = linear_interpolation((start.color >> 16) & 0xFF,
-            (end.color >> 16) & 0xFF, ratio);
-    blue = linear_interpolation((start.color >> 8) & 0xFF,
-            (end.color >> 8) & 0xFF, ratio);
-    alpha = linear_interpolation(start.color & 0xFF, 
-            end.color & 0xFF, ratio);
-    
-    return ((red << 24) | (green << 16) | (blue << 8) | alpha);
-}
-```
-
-A função calcula a proporção atual ao longo da linha e interpola independentemente cada componente de cor (vermelho, verde, azul e alpha).
-
-## Controles da Câmera
-
-Os controles da câmera permitem ao usuário navegar e ajustar a visualização:
-
-```c
-void handle_translation(void *param)
-{
-    t_fdf *fdf;
-
-    fdf = param;
-    if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_W))
-        fdf->camera->y_offset -= TRANSLATE_STEP;
-    else if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_S))
-        fdf->camera->y_offset += TRANSLATE_STEP;
-    else if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_A))
-        fdf->camera->x_offset -= TRANSLATE_STEP;
-    else if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_D))
-        fdf->camera->x_offset += TRANSLATE_STEP;
-    else
-        return;
-    render_map(fdf);
-}
-
-void handle_zoom(void *param)
-{
-    t_fdf *fdf;
-
-    fdf = param;
-    if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_R))
-    {
-        reset_camera(fdf);
-        render_map(fdf);
-        return;
-    }
-    
-    // Controles de zoom
-    if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_KP_ADD))
-        fdf->camera->zoom_level *= 1.1;
-    else if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_KP_SUBTRACT))
-        fdf->camera->zoom_level /= 1.1;
-    else if (fdf->camera->zoom_level < 0.01)
-        fdf->camera->zoom_level = 0.01;
-    
-    // Controles de escala Z
-    else if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_J))
-        fdf->camera->z_scale_factor *= 1.1;
-    else if (mlx_is_key_down(fdf->mlx_instance, MLX_KEY_K))
-        fdf->camera->z_scale_factor /= 1.1;
-    else if (fdf->camera->z_scale_factor < 0.01)
-        fdf->camera->z_scale_factor = 0.01;
-    else
-        return;
-        
-    render_map(fdf);
-}
-```
-
-Os controles implementados são:
-- **W/A/S/D**: Move a câmera verticalmente e horizontalmente
-- **Numpad +/-**: Aumenta/diminui o zoom
-- **J/K**: Aumenta/diminui a escala vertical (altura)
-- **R**: Reinicia a câmera para configurações padrão
-- **ESC**: Fecha o programa
-
-## Gerenciamento de Memória
-
-O projeto gerencia cuidadosamente a memória para evitar vazamentos:
-
-```c
-// Liberação da memória do mapa
-void free_map(t_map *map)
-{
-    free(map->points);
-    free(map);
-}
-
-// Liberação de arrays de strings
-void free_string_array(char **array)
-{
-    int i;
-
-    i = 0;
-    while (array && array[i])
-    {
-        free(array[i]);
-        i++;
-    }
-    free(array);
-}
-
-// No main.c, liberação de todas as estruturas ao terminar
-mlx_terminate(fdf.mlx_instance);
-free(fdf.camera);
-free_map(fdf.map);
-```
-
-## Conclusão
-
-O FdF demonstra vários conceitos fundamentais de computação gráfica:
-
-1. **Transformação de coordenadas**: Conversão de coordenadas 3D para 2D usando projeção isométrica
-2. **Rasterização de linhas**: Uso do algoritmo de Bresenham para desenhar linhas eficientemente
-3. **Manipulação de cores**: Parsing e interpolação de cores para visualização gradiente
-4. **Interatividade**: Sistema de controles para permitir navegação e ajustes na visualização
-5. **Gerenciamento de recursos**: Alocação e liberação apropriada de memória
-
-Para expandir este projeto, você poderia considerar:
-- Implementar projeções adicionais (perspectiva, oblíqua)
-- Adicionar rotação 3D
-- Implementar ocultação de faces (não renderizar linhas que estariam atrás de outras)
-- Adicionar texturas ou iluminação mais sofisticada
-
-Este guia oferece uma visão detalhada da implementação do FdF, explicando as decisões de design e os algoritmos utilizados.
+*This project is part of the 42 School common core curriculum, focusing on graphics programming, 3D mathematics, and efficient algorithm implementation.*
