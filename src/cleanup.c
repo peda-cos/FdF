@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   cleanup.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,28 +12,45 @@
 
 #include "fdf.h"
 
-int	main(int argc, char **argv)
+void	free_map(t_map *map)
 {
-	t_fdf	fdf;
+	int	i;
 
-	if (argc != 2)
+	i = 0;
+	while (i < map->height)
 	{
-		ft_putstr_fd("Usage: ./fdf <map.fdf>\n", 2);
-		return (1);
+		free(map->z_values[i]);
+		i++;
 	}
-	ft_bzero(&fdf, sizeof(t_fdf));
-	if (parse_map(argv[1], &fdf.map) == -1)
+	free(map->z_values);
+	map->z_values = NULL;
+	i = 0;
+	while (i < map->height)
 	{
-		exit_error("Error: invalid map\n", NULL);
+		free(map->colors[i]);
+		i++;
 	}
-	assign_default_colors(&fdf.map);
-	if (init_fdf(&fdf) == -1)
+	free(map->colors);
+	map->colors = NULL;
+}
+
+void	cleanup_fdf(t_fdf *fdf)
+{
+	if (fdf->img.ptr)
+		mlx_destroy_image(fdf->mlx, fdf->img.ptr);
+	if (fdf->win)
+		mlx_destroy_window(fdf->mlx, fdf->win);
+	if (fdf->mlx)
 	{
-		exit_error("Error: MLX init failed\n", &fdf);
+		mlx_destroy_display(fdf->mlx);
+		free(fdf->mlx);
 	}
-	init_camera(&fdf.cam, &fdf.map);
-	render(&fdf);
-	setup_hooks(&fdf);
-	mlx_loop(fdf.mlx);
+	free_map(&fdf->map);
+}
+
+int	close_handler(t_fdf *fdf)
+{
+	cleanup_fdf(fdf);
+	exit(0);
 	return (0);
 }

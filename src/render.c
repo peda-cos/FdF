@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   render.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,28 +12,46 @@
 
 #include "fdf.h"
 
-int	main(int argc, char **argv)
+static void	draw_links(t_fdf *fdf, int x, int y)
 {
-	t_fdf	fdf;
+	t_point	cur;
+	t_point	right;
+	t_point	bot;
 
-	if (argc != 2)
+	cur = project_point(x, y, fdf);
+	if (x + 1 < fdf->map.width)
 	{
-		ft_putstr_fd("Usage: ./fdf <map.fdf>\n", 2);
-		return (1);
+		right = project_point(x + 1, y, fdf);
+		draw_line(&fdf->img, cur, right);
 	}
-	ft_bzero(&fdf, sizeof(t_fdf));
-	if (parse_map(argv[1], &fdf.map) == -1)
+	if (y + 1 < fdf->map.height)
 	{
-		exit_error("Error: invalid map\n", NULL);
+		bot = project_point(x, y + 1, fdf);
+		draw_line(&fdf->img, cur, bot);
 	}
-	assign_default_colors(&fdf.map);
-	if (init_fdf(&fdf) == -1)
+}
+
+static void	draw_map(t_fdf *fdf)
+{
+	int	x;
+	int	y;
+
+	y = 0;
+	while (y < fdf->map.height)
 	{
-		exit_error("Error: MLX init failed\n", &fdf);
+		x = 0;
+		while (x < fdf->map.width)
+		{
+			draw_links(fdf, x, y);
+			x++;
+		}
+		y++;
 	}
-	init_camera(&fdf.cam, &fdf.map);
-	render(&fdf);
-	setup_hooks(&fdf);
-	mlx_loop(fdf.mlx);
-	return (0);
+}
+
+void	render(t_fdf *fdf)
+{
+	ft_bzero(fdf->img.addr, WIN_HEIGHT * fdf->img.line_len);
+	draw_map(fdf);
+	mlx_put_image_to_window(fdf->mlx, fdf->win, fdf->img.ptr, 0, 0);
 }

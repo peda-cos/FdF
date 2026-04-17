@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   main.c                                             :+:      :+:    :+:   */
+/*   parse_utils.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -12,28 +12,59 @@
 
 #include "fdf.h"
 
-int	main(int argc, char **argv)
+int	parse_hex(char *str)
 {
-	t_fdf	fdf;
+	int	result;
+	int	digit;
 
-	if (argc != 2)
+	result = 0;
+	while (*str)
 	{
-		ft_putstr_fd("Usage: ./fdf <map.fdf>\n", 2);
-		return (1);
+		if (*str >= '0' && *str <= '9')
+			digit = *str - '0';
+		else if (*str >= 'a' && *str <= 'f')
+			digit = *str - 'a' + 10;
+		else
+			digit = *str - 'A' + 10;
+		result = result * 16 + digit;
+		str++;
 	}
-	ft_bzero(&fdf, sizeof(t_fdf));
-	if (parse_map(argv[1], &fdf.map) == -1)
+	return (result);
+}
+
+void	parse_token(char *token, int *z, int *color)
+{
+	char	*comma;
+	char	*hex_start;
+
+	comma = ft_strchr(token, ',');
+	if (comma)
 	{
-		exit_error("Error: invalid map\n", NULL);
+		*z = ft_atoi(token);
+		hex_start = comma + 3;
+		*color = parse_hex(hex_start);
 	}
-	assign_default_colors(&fdf.map);
-	if (init_fdf(&fdf) == -1)
+	else
+		*z = ft_atoi(token);
+}
+
+void	free_split(char **arr)
+{
+	int	i;
+
+	i = 0;
+	while (arr[i])
 	{
-		exit_error("Error: MLX init failed\n", &fdf);
+		free(arr[i]);
+		i++;
 	}
-	init_camera(&fdf.cam, &fdf.map);
-	render(&fdf);
-	setup_hooks(&fdf);
-	mlx_loop(fdf.mlx);
-	return (0);
+	free(arr);
+}
+
+void	exit_error(char *msg, t_fdf *fdf)
+{
+	ft_putstr_fd(msg, 2);
+	if (fdf)
+		cleanup_fdf(fdf);
+	exit(1);
 }

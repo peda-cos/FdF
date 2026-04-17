@@ -1,357 +1,152 @@
-# FdF - Fil de Fer (Wireframe Renderer)
+*This project has been created as part of the 42 curriculum by \<peda-cos\>*
 
-A 3D wireframe visualization project that renders heightmaps in isometric projection. This project reads `.fdf` map files containing 3D coordinates and displays them as beautiful wireframe models with real-time camera controls.
+## Description
 
-![42 School Project](https://img.shields.io/badge/42-School_Project-000000?style=flat-square&logo=42)
-![Language](https://img.shields.io/badge/Language-C-blue?style=flat-square)
-![Graphics](https://img.shields.io/badge/Graphics-MLX42-green?style=flat-square)
+**FDF** (short for *"fil de fer"*, French for *"wireframe model"*) is a graphics
+project from the 42 Common Core. Its goal is to render a 3D landscape as a
+wireframe: each cell of a `.fdf` map file represents an `(x, y, z)` point in
+space, and neighboring points are connected by line segments (edges). The
+result is projected onto a 2D window using an isometric projection.
 
-## 📋 Table of Contents
+The project is written in **C**, uses the school's **MiniLibX** graphical
+library to handle the window, images, and input events, and relies on a
+personal **libft** for common utilities (`get_next_line`, `ft_split`,
+`ft_printf`, etc.).
 
-- [About](#about)
-- [Technology Stack](#technology-stack)
-- [Project Architecture](#project-architecture)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Key Features](#key-features)
-- [Usage](#usage)
-- [Controls](#controls)
-- [Map File Format](#map-file-format)
-- [Development Workflow](#development-workflow)
-- [Coding Standards](#coding-standards)
-- [License](#license)
+Beyond the mandatory isometric rendering, this implementation also provides:
 
-## 📖 About
+- A **parallel projection** mode (toggle between projections at runtime).
+- **Zoom** in and out (keyboard and mouse wheel).
+- **Translation** of the model (arrow keys).
+- **Rotation** of the model on the X, Y, and Z axes.
+- **Altitude scaling** to exaggerate or flatten the relief.
+- **Color gradient** based on altitude for better depth perception.
 
-**FdF** (Fil de Fer, meaning "wireframe" in French) is a graphics project from the 42 School curriculum. The program takes a file representing a 3D landscape and renders it in isometric projection as a wireframe model. The visualization supports real-time interaction through keyboard controls for zooming, panning, and adjusting the Z-axis scale.
+## Instructions
 
-## 🛠 Technology Stack
+### Requirements
 
-### Core Technologies
-- **Language:** C (C99)
-- **Graphics Library:** MLX42 (42's modern graphics library)
-- **Custom Library:** libft (custom C standard library implementation)
+- A Linux system with X11 development libraries installed
+  (`libx11-dev`, `libxext-dev`, `zlib1g-dev`).
+- A C compiler (`cc` / `gcc`) and GNU `make`.
+- The MiniLibX sources are already bundled in the `minilibx/` directory.
+- `libft` is already bundled in the `libft/` directory.
 
-### Dependencies
-- **GLFW:** For window management and input handling
-- **OpenGL:** Via GLAD for rendering
-- **CMake:** For building MLX42
-- **pthread:** For multi-threading support
-- **Math library:** For trigonometric calculations
+### Build
 
-### Build Tools
-- **Compiler:** gcc/clang with flags: `-Wall -Wextra -Werror -Wunreachable-code -Ofast`
-- **Build System:** Make
-- **Memory Management:** Valgrind (suppressions file included)
+From the project root:
 
-## 🏗 Project Architecture
-
-The FdF project follows a modular architecture with clear separation of concerns:
-
-### Core Components
-
-1. **Map Management** (`map_loading.c`, `map_management.c`)
-   - File parsing and validation
-   - Memory allocation for map data
-   - Z-coordinate tracking (min/max)
-
-2. **Camera System** (`camera_controls.c`)
-   - Isometric projection transformation
-   - Zoom and translation management
-   - Z-axis scaling for depth adjustment
-
-3. **Rendering Engine** (`map_rendering.c`, `drawing_helpers.c`)
-   - Bresenham line drawing algorithm
-   - Pixel-perfect line rendering
-   - Boundary checking
-
-4. **Color Processing** (`color_processing.c`)
-   - Hexadecimal color parsing
-   - Color interpolation for gradient effects
-   - RGBA conversion
-
-5. **Input Handling** (`input_hooks.c`)
-   - Keyboard event management
-   - Real-time camera control
-   - Window management
-
-### Data Structures
-
-```c
-// Point representation with color
-typedef struct s_point {
-    int         x, y, z;
-    uint32_t    color;
-} t_point;
-
-// Map structure
-typedef struct s_map {
-    unsigned int    width, height, total_points;
-    int             min_z, max_z;
-    t_point         *points;
-} t_map;
-
-// Camera configuration
-typedef struct s_camera {
-    int     projection_type;
-    float   zoom_level;
-    double  z_scale_factor;
-    int     x_offset, y_offset;
-} t_camera;
-
-// Main FdF structure
-typedef struct s_fdf {
-    t_map       *map;
-    t_camera    *camera;
-    mlx_t       *mlx_instance;
-    mlx_image_t *image;
-} t_fdf;
+```sh
+make
 ```
 
-## 🚀 Getting Started
+This compiles `libft`, `minilibx`, and then links the `fdf` binary at the
+root of the repository. Compilation uses `-Wall -Wextra -Werror` and does
+not perform unnecessary relinking.
 
-### Prerequisites
+Other available rules:
 
-Ensure you have the following installed:
+| Rule | Action |
+|---|---|
+| `make` / `make all` | Build the `fdf` binary (default rule). |
+| `make bonus` | Same as `all` — bonuses are built into the main binary. |
+| `make clean` | Remove object files. |
+| `make fclean` | Remove object files and the `fdf` binary. |
+| `make re` | `fclean` + `all`. |
 
-```bash
-# Ubuntu/Debian
-sudo apt-get update
-sudo apt-get install build-essential cmake libglfw3-dev xorg-dev
+### Run
 
-# macOS
-brew install cmake glfw
-```
-
-### Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/peda-cos/FdF.git
-   cd FdF
-   ```
-
-2. **Build the project:**
-   ```bash
-   make
-   ```
-
-   This will:
-   - Build the custom libft library
-   - Compile MLX42 using CMake
-   - Compile all FdF source files
-   - Link everything into the `fdf` executable
-
-3. **Run the program:**
-   ```bash
-   ./fdf maps/42.fdf
-   ```
-
-### Cleaning
-
-```bash
-make clean   # Remove object files
-make fclean  # Remove object files and executable
-make re      # Rebuild everything from scratch
-```
-
-## 📁 Project Structure
-
-```
-FdF/
-├── src/                    # Source files
-│   ├── main.c              # Entry point
-│   ├── fdf.h               # Main header file
-│   ├── camera_controls.c   # Camera transformations
-│   ├── color_processing.c  # Color handling
-│   ├── drawing_helpers.c   # Line drawing utilities
-│   ├── input_hooks.c       # Keyboard input
-│   ├── map_loading.c       # Map file parsing
-│   ├── map_management.c    # Map memory management
-│   ├── map_rendering.c     # Rendering logic
-│   └── utility_functions.c # Helper functions
-├── lib/                    # External libraries
-│   ├── libft/              # Custom C library
-│   └── MLX42/              # Graphics library
-├── maps/                   # Sample map files
-│   ├── 42.fdf
-│   ├── pyramide.fdf
-│   ├── mars.fdf
-│   └── ...
-├── Makefile              # Build configuration
-├── suppressions.supp     # Valgrind suppressions
-└── LICENSE               # MIT License
-```
-
-## ✨ Key Features
-
-### Rendering
-- **Isometric Projection:** 3D visualization with proper depth perception
-- **Color Support:** Parse and display custom colors from map files
-- **Color Gradients:** Smooth color interpolation between points
-- **Wireframe Display:** Clean line-based rendering
-
-### Camera Controls
-- **Dynamic Zoom:** Smooth zooming in/out
-- **Translation:** Pan the view in all directions
-- **Z-Axis Scaling:** Adjust height/depth visualization
-- **Reset Function:** Return to default view instantly
-
-### Map Processing
-- **Flexible Format:** Support for various map sizes
-- **Color Parsing:** Hexadecimal color codes (e.g., `10,0xFF0000`)
-- **Validation:** Robust error checking for file format
-- **Memory Efficient:** Optimized memory allocation
-
-## 📖 Usage
-
-### Basic Usage
-
-```bash
-./fdf <map_file.fdf>
-```
-
-### Examples
-
-```bash
-# Render the 42 logo
+```sh
 ./fdf maps/42.fdf
-
-# Render a pyramid
-./fdf maps/pyramide.fdf
-
-# Render Mars terrain
-./fdf maps/mars.fdf
 ```
 
-## 🎮 Controls
+The program takes a single argument: the path to a `.fdf` map file.
+A selection of sample maps is included in the `maps/` directory
+(e.g. `42.fdf`, `mars.fdf`, `pyramide.fdf`, `julia.fdf`, …).
 
-| Key          | Action                          |
-| ------------ | ------------------------------- |
-| **ESC**      | Exit the program                |
-| **W**        | Move up                         |
-| **S**        | Move down                       |
-| **A**        | Move left                       |
-| **D**        | Move right                      |
-| **Keypad +** | Zoom in                         |
-| **Keypad -** | Zoom out                        |
-| **J**        | Increase Z-axis scale (flatten) |
-| **K**        | Decrease Z-axis scale (amplify) |
-| **R**        | Reset camera to default view    |
+### Controls
 
-## 📄 Map File Format
+| Key / Input | Action |
+|---|---|
+| `ESC` or window close button | Quit cleanly. |
+| Arrow keys | Translate the model. |
+| `N` / `M` or mouse wheel | Zoom in / zoom out. |
+| `J` / `K` | Decrease / increase altitude scale. |
+| `W` / `S` | Rotate around the X axis. |
+| `A` / `D` | Rotate around the Z axis. |
+| `Q` / `E` | Rotate around the Y axis. |
+| `P` | Toggle between isometric and parallel projection. |
+| `R` | Reset camera to default view. |
 
-Map files (`.fdf`) consist of numbers representing Z-coordinates (height) at each point:
+### Map format
 
-### Basic Format
-```
-0  0  0  0  0
-0  10 10 10 0
-0  10 20 10 0
-0  10 10 10 0
-0  0  0  0  0
-```
-
-### With Colors
-```
-0  0  0  0  0
-0  10,0xFF0000 10,0xFF0000 10,0xFF0000 0
-0  10,0x00FF00 20,0xFFFF00 10,0x00FF00 0
-0  10,0x0000FF 10,0x0000FF 10,0x0000FF 0
-0  0  0  0  0
-```
-
-- Numbers represent Z-coordinates (height)
-- Optional hexadecimal color after comma (format: `z,0xRRGGBB`)
-- Spaces separate points on the same line
-- Each line must have the same number of points
-
-## 🔄 Development Workflow
-
-### Building
-1. Modify source files in `src/`
-2. Run `make` to compile
-3. Test with sample maps in `maps/`
-
-### Debugging
-- Use `valgrind` with the provided suppressions file:
-  ```bash
-  valgrind --leak-check=full --suppressions=suppressions.supp ./fdf maps/42.fdf
-  ```
-
-### Adding Features
-1. Update `fdf.h` with new function prototypes
-2. Implement functions in appropriate source files
-3. Update Makefile if adding new files
-4. Test thoroughly with various map files
-
-## 📝 Coding Standards
-
-This project follows the **42 School Norm**, which includes:
-
-### Code Style
-- **Indentation:** Tabs (displayed as 4 spaces)
-- **Line Length:** Maximum 80 characters
-- **Function Length:** Maximum 25 lines
-- **Functions per File:** Maximum 5 functions
-- **Parameters:** Maximum 4 parameters per function
-
-### Naming Conventions
-- **Functions:** `snake_case` with descriptive names
-- **Variables:** `snake_case`
-- **Structs:** `typedef struct s_name` with `t_name` alias
-- **Macros:** `UPPER_CASE`
-
-### Memory Management
-- No memory leaks permitted
-- All allocated memory must be freed
-- Proper error handling for allocations
-- Use of custom `ft_calloc` from libft
-
-### Forbidden
-- Global variables (except specific cases)
-- Use of `for` loops (while loops only)
-- Standard library functions (must use libft)
-- External libraries except MLX42 and allowed math functions
-
-## 🧪 Testing
-
-### Sample Maps
-The `maps/` directory contains various test cases:
-- **Simple shapes:** `pyramide.fdf`, `pyra.fdf`
-- **Complex terrain:** `mars.fdf`, `julia.fdf`
-- **Edge cases:** `elem-fract.fdf` (fractional coordinates)
-- **Color testing:** `elem-col.fdf` (with colors)
-
-### Validation Tests
-- Empty file handling
-- Invalid file extensions
-- Inconsistent line widths
-- Invalid number formats
-- Color parsing edge cases
-
-## 👤 Author
-
-**Pedro Monteiro** (peda-cos)
-- GitHub: [@peda-cos](https://github.com/peda-cos)
-- 42 Intra: peda-cos
-- Email: peda-cos@student.42sp.org.br
-
-## 📜 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+Each line of the `.fdf` file corresponds to a row of the landscape.
+Each whitespace-separated value is the altitude at that `(x, y)` position.
+An optional `,0xRRGGBB` suffix may be appended to a value to assign a
+color to that point:
 
 ```
-Copyright (c) 2025 Pedro Monteiro
+0  0  10,0xFF0000  10  0
+0  0  10           10  0
 ```
 
-## 🙏 Acknowledgments
+Maps must be rectangular (all rows share the same number of columns).
+As stated in the subject, the program assumes that the input file is
+properly formatted.
 
-- **42 School** for the project specifications
-- **MLX42** library developers for the modern graphics framework
-- **Codam Coding College** for MLX42 documentation and examples
-- **42 São Paulo** community for support and collaboration
+## Project layout
 
----
+```
+.
+├── Makefile
+├── include/fdf.h          # public types and prototypes
+├── libft/                 # personal C utility library
+├── minilibx/              # school graphical library (X11 backend)
+├── maps/                  # sample .fdf maps (42, mars, pyramide, julia, …)
+└── src/
+    ├── main.c             # entry point, argument handling, main loop
+    ├── parse_map.c        # .fdf file reader
+    ├── parse_utils.c      # row/point parsing helpers
+    ├── init.c             # MLX and camera initialization
+    ├── project.c          # isometric / parallel projections, rotations
+    ├── draw_line.c        # Bresenham line-drawing with color interpolation
+    ├── render.c           # frame composition from the map + camera state
+    ├── color.c            # altitude-based color gradient
+    ├── hooks.c            # keyboard, mouse, and close-event handlers
+    └── cleanup.c          # memory cleanup and clean exit
+```
 
-*This project is part of the 42 School common core curriculum, focusing on graphics programming, 3D mathematics, and efficient algorithm implementation.*
+## Resources
+
+Classic references and documentation used while working on this project:
+
+- **MiniLibX** — official tutorial by Gontjarow:
+  <https://harm-smits.github.io/42docs/libs/minilibx>
+- **MiniLibX source and intro (42 cursus)**:
+  <https://github.com/42Paris/minilibx-linux>
+- **Bresenham's line algorithm** (Wikipedia):
+  <https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm>
+- **Isometric projection** (Wikipedia):
+  <https://en.wikipedia.org/wiki/Isometric_projection>
+- **Rotation matrices** (Wikipedia):
+  <https://en.wikipedia.org/wiki/Rotation_matrix>
+- **X11 keysym reference** (`<X11/keysym.h>`) for key-handling constants.
+- **42 Norm v4.1** — the coding standard enforced on the project,
+  checked with [`norminette`](https://github.com/42School/norminette).
+
+### Use of AI
+
+AI assistants (LLMs) were used in a limited, supervised way during this
+project, mostly as a rubber-duck / reference tool. Specifically:
+
+- **Explaining concepts** — clarifying the math behind isometric projection,
+  rotation matrices, and Bresenham's algorithm when the reference material
+  was unclear.
+- **Debugging help** — reading compiler / valgrind / norminette errors and
+  suggesting where to look in the code.
+- **README drafting** — producing the first draft of this file, which was
+  then reviewed and edited.
+
+AI was **not** used to generate the core implementation (parsing, projection,
+rendering, hook handling, memory management): those were written and
+debugged by hand to make sure every line is understood and Norm-compliant.

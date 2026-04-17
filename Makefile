@@ -1,49 +1,52 @@
-NAME        = fdf
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2026/04/16 00:00:00 by peda-cos          #+#    #+#              #
+#    Updated: 2026/04/16 00:00:00 by peda-cos         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
 
-CC          = cc
-CFLAGS      = -Wextra -Wall -Werror -Wunreachable-code -Ofast -g
+NAME    = fdf
+CC      = cc
+CFLAGS  = -Wall -Wextra -Werror -I./include -I./libft -I./libft/get_next_line -I./minilibx
+LDFLAGS = -L./libft -lft -L./minilibx -lmlx_Linux -lXext -lX11 -lm
 
-INCLUDES    = -I ./src -I ./lib/MLX42/include -I ./lib/libft
-LIBFT_DIR   = ./lib/libft
-LIBFT       = $(LIBFT_DIR)/libft.a
-MLX42_DIR   = ./lib/MLX42
-MLX42_BUILD = $(MLX42_DIR)/build
-LIBMLX42    = $(MLX42_BUILD)/libmlx42.a
-LIBS        = $(LIBMLX42) -ldl -lglfw -pthread -lm
+# ── sources ──────────────────────────────────────────────────────────────────
+SRCS = src/main.c src/parse_map.c src/parse_utils.c src/init.c \
+       src/render.c src/project.c src/draw_line.c src/color.c \
+       src/hooks.c src/cleanup.c
 
-SRCS = src/camera_controls.c src/color_processing.c src/drawing_helpers.c src/input_hooks.c src/main.c src/map_loading.c src/map_management.c src/map_rendering.c src/utility_functions.c
 OBJS = $(SRCS:.c=.o)
 
+# ── rules ────────────────────────────────────────────────────────────────────
 all: $(NAME)
 
-$(NAME): libmlx $(LIBFT) $(OBJS)
-	@$(CC) $(CFLAGS) $(OBJS) -o $(NAME) $(LIBFT) $(LIBS)
-	@echo "Linking complete: $(NAME)"
+$(NAME): $(OBJS)
+	@$(MAKE) -C libft
+	@$(MAKE) -C minilibx
+	@$(CC) $(CFLAGS) $(OBJS) $(LDFLAGS) -o $(NAME)
+	@echo "Compiled: $(NAME)"
 
-libmlx:
-	@cmake -DDEBUG=1 $(MLX42_DIR) -B $(MLX42_BUILD)
-	@make -C $(MLX42_BUILD) -j4
-	@echo "MLX42 build complete."
-
-$(LIBFT):
-	@make -C $(LIBFT_DIR) all
-	@echo "Libft build complete."
-
-%.o: %.c
-	@$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+src/%.o: src/%.c
+	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "Compiling: $<"
 
+bonus: $(NAME)
+
 clean:
-	@rm -rf $(OBJS)
-	@make clean -C $(LIBFT_DIR)
-	@rm -rf $(MLX42_BUILD)
-	@echo "Cleanup complete."
+	@rm -f $(OBJS)
+	@$(MAKE) -C libft clean
+	@echo "Cleaned: objects"
 
 fclean: clean
 	@rm -f $(NAME)
-	@make fclean -C $(LIBFT_DIR)
-	@echo "Full cleanup complete."
+	@$(MAKE) -C libft fclean
+	@echo "Cleaned: $(NAME)"
 
 re: fclean all
 
-.PHONY: all clean fclean re libmlx
+.PHONY: all clean fclean re
