@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_map.c                                        :+:      :+:    :+:   */
+/*   rotation.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,44 +11,30 @@
 /* ************************************************************************** */
 
 #include "fdf.h"
-#include <sys/stat.h>
 
-static int	open_map(char *filename)
+void	rotate_x(double *y, double *z, double sin_a, double cos_a)
 {
-	struct stat	st;
-	int			fd;
+	double	prev;
 
-	if (stat(filename, &st) < 0 || !S_ISREG(st.st_mode))
-		return (-1);
-	fd = open(filename, O_RDONLY);
-	return (fd);
+	prev = *y;
+	*y = prev * cos_a - *z * sin_a;
+	*z = prev * sin_a + *z * cos_a;
 }
 
-int	parse_map(char *filename, t_map *map)
+void	rotate_y(double *x, double *z, double sin_a, double cos_a)
 {
-	char	**lines;
-	int		count;
-	int		fd;
+	double	prev;
 
-	fd = open_map(filename);
-	if (fd < 0)
-		return (-1);
-	lines = read_lines(fd, &count);
-	close(fd);
-	if (!lines || count == 0)
-		return (-1);
-	map->height = count;
-	map->z_min = 0;
-	map->z_max = 0;
-	if (alloc_map_rows(map, lines[0]) < 0)
-	{
-		free_lines(lines, count);
-		return (-1);
-	}
-	if (process_lines(lines, map, count) < 0)
-	{
-		free_map(map);
-		return (-1);
-	}
-	return (0);
+	prev = *x;
+	*x = prev * cos_a - *z * sin_a;
+	*z = prev * sin_a + *z * cos_a;
+}
+
+void	rotate_z(double *x, double *y, double sin_a, double cos_a)
+{
+	double	prev;
+
+	prev = *x;
+	*x = prev * cos_a - *y * sin_a;
+	*y = prev * sin_a + *y * cos_a;
 }

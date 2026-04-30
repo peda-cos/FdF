@@ -12,42 +12,6 @@
 
 #include "fdf.h"
 
-int	parse_hex(char *str)
-{
-	int	result;
-	int	digit;
-
-	result = 0;
-	while (*str)
-	{
-		if (*str >= '0' && *str <= '9')
-			digit = *str - '0';
-		else if (*str >= 'a' && *str <= 'f')
-			digit = *str - 'a' + 10;
-		else
-			digit = *str - 'A' + 10;
-		result = result * 16 + digit;
-		str++;
-	}
-	return (result);
-}
-
-void	parse_token(char *token, int *z, int *color)
-{
-	char	*comma;
-	char	*hex_start;
-
-	comma = ft_strchr(token, ',');
-	if (comma)
-	{
-		*z = ft_atoi(token);
-		hex_start = comma + 3;
-		*color = parse_hex(hex_start);
-	}
-	else
-		*z = ft_atoi(token);
-}
-
 void	free_split(char **arr)
 {
 	int	i;
@@ -61,10 +25,53 @@ void	free_split(char **arr)
 	free(arr);
 }
 
-void	exit_error(char *msg, t_fdf *fdf)
+void	free_lines(char **lines, int count)
 {
-	ft_putstr_fd(msg, 2);
-	if (fdf)
-		cleanup_fdf(fdf);
-	exit(1);
+	int	i;
+
+	i = 0;
+	while (i < count)
+	{
+		free(lines[i]);
+		i++;
+	}
+	free(lines);
+}
+
+static int	parse_token_loop(char **tokens, t_map *map, int row)
+{
+	int	col;
+	int	*z_row;
+	int	*c_row;
+
+	z_row = map->z_values[row];
+	c_row = map->colors[row];
+	col = 0;
+	while (col < map->width && tokens[col])
+	{
+		if (parse_token(tokens[col], &z_row[col], &c_row[col]) < 0)
+			return (-1);
+		if (z_row[col] < map->z_min)
+			map->z_min = z_row[col];
+		if (z_row[col] > map->z_max)
+			map->z_max = z_row[col];
+		col++;
+	}
+	return (0);
+}
+
+int	parse_line(char *line, t_map *map, int row)
+{
+	char	**tokens;
+
+	tokens = ft_split(line, ' ');
+	if (!tokens)
+		return (-1);
+	if (parse_token_loop(tokens, map, row) < 0)
+	{
+		free_split(tokens);
+		return (-1);
+	}
+	free_split(tokens);
+	return (0);
 }

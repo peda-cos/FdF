@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_map.c                                        :+:      :+:    :+:   */
+/*   error.c                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,44 +11,11 @@
 /* ************************************************************************** */
 
 #include "fdf.h"
-#include <sys/stat.h>
 
-static int	open_map(char *filename)
+void	exit_error(char *msg, t_fdf *fdf)
 {
-	struct stat	st;
-	int			fd;
-
-	if (stat(filename, &st) < 0 || !S_ISREG(st.st_mode))
-		return (-1);
-	fd = open(filename, O_RDONLY);
-	return (fd);
-}
-
-int	parse_map(char *filename, t_map *map)
-{
-	char	**lines;
-	int		count;
-	int		fd;
-
-	fd = open_map(filename);
-	if (fd < 0)
-		return (-1);
-	lines = read_lines(fd, &count);
-	close(fd);
-	if (!lines || count == 0)
-		return (-1);
-	map->height = count;
-	map->z_min = 0;
-	map->z_max = 0;
-	if (alloc_map_rows(map, lines[0]) < 0)
-	{
-		free_lines(lines, count);
-		return (-1);
-	}
-	if (process_lines(lines, map, count) < 0)
-	{
-		free_map(map);
-		return (-1);
-	}
-	return (0);
+	ft_putstr_fd(msg, 2);
+	if (fdf)
+		cleanup_fdf(fdf);
+	exit(1);
 }

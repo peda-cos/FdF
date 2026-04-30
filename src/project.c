@@ -6,38 +6,11 @@
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/16 00:00:00 by peda-cos          #+#    #+#             */
-/*   Updated: 2026/04/16 00:00:00 by peda-cos         ###   ########.fr       */
+/*   Updated: 2026/04/16 00:00:00 by peda-cos         ###  ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "fdf.h"
-
-static void	rotate_x(double *y, double *z, double angle)
-{
-	double	prev;
-
-	prev = *y;
-	*y = prev * cos(angle) - *z * sin(angle);
-	*z = prev * sin(angle) + *z * cos(angle);
-}
-
-static void	rotate_y(double *x, double *z, double angle)
-{
-	double	prev;
-
-	prev = *x;
-	*x = prev * cos(angle) - *z * sin(angle);
-	*z = prev * sin(angle) + *z * cos(angle);
-}
-
-static void	rotate_z(double *x, double *y, double angle)
-{
-	double	prev;
-
-	prev = *x;
-	*x = prev * cos(angle) - *y * sin(angle);
-	*y = prev * sin(angle) + *y * cos(angle);
-}
 
 static t_point	apply_projection(double px, double py, double pz, t_fdf *fdf)
 {
@@ -46,8 +19,8 @@ static t_point	apply_projection(double px, double py, double pz, t_fdf *fdf)
 	ft_bzero(&result, sizeof(t_point));
 	if (fdf->cam.projection == ISO)
 	{
-		result.x = (px - py) * cos(0.523599);
-		result.y = (px + py) * sin(0.523599) - pz;
+		result.x = (px - py) * cos(ISO_ANGLE);
+		result.y = (px + py) * sin(ISO_ANGLE) - pz;
 	}
 	else
 	{
@@ -61,7 +34,7 @@ static t_point	apply_projection(double px, double py, double pz, t_fdf *fdf)
 	return (result);
 }
 
-t_point	project_point(int x, int y, t_fdf *fdf)
+t_point	project_point_trig(int x, int y, t_fdf *fdf, t_trig *trig)
 {
 	double	px;
 	double	py;
@@ -71,10 +44,23 @@ t_point	project_point(int x, int y, t_fdf *fdf)
 	px = x - fdf->map.width / 2.0;
 	py = y - fdf->map.height / 2.0;
 	pz = fdf->map.z_values[y][x] * fdf->cam.z_scale;
-	rotate_x(&py, &pz, fdf->cam.x_rot);
-	rotate_y(&px, &pz, fdf->cam.y_rot);
-	rotate_z(&px, &py, fdf->cam.z_rot);
+	rotate_x(&py, &pz, trig->sin_x, trig->cos_x);
+	rotate_y(&px, &pz, trig->sin_y, trig->cos_y);
+	rotate_z(&px, &py, trig->sin_z, trig->cos_z);
 	result = apply_projection(px, py, pz, fdf);
 	result.color = fdf->map.colors[y][x];
 	return (result);
+}
+
+t_point	project_point(int x, int y, t_fdf *fdf)
+{
+	t_trig	trig;
+
+	trig.sin_x = sin(fdf->cam.x_rot);
+	trig.cos_x = cos(fdf->cam.x_rot);
+	trig.sin_y = sin(fdf->cam.y_rot);
+	trig.cos_y = cos(fdf->cam.y_rot);
+	trig.sin_z = sin(fdf->cam.z_rot);
+	trig.cos_z = cos(fdf->cam.z_rot);
+	return (project_point_trig(x, y, fdf, &trig));
 }

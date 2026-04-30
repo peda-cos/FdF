@@ -12,30 +12,32 @@
 
 #include "fdf.h"
 
-void	free_map(t_map *map)
+void	free_map_partial(t_map *map, int rows)
 {
 	int	i;
 
 	i = 0;
-	while (i < map->height)
+	while (i < rows)
 	{
 		free(map->z_values[i]);
-		i++;
-	}
-	free(map->z_values);
-	map->z_values = NULL;
-	i = 0;
-	while (i < map->height)
-	{
 		free(map->colors[i]);
 		i++;
 	}
+	free(map->z_values);
 	free(map->colors);
+}
+
+void	free_map(t_map *map)
+{
+	free_map_partial(map, map->height);
+	map->z_values = NULL;
 	map->colors = NULL;
 }
 
 void	cleanup_fdf(t_fdf *fdf)
 {
+	int	i;
+
 	if (fdf->img.ptr)
 		mlx_destroy_image(fdf->mlx, fdf->img.ptr);
 	if (fdf->win)
@@ -45,12 +47,24 @@ void	cleanup_fdf(t_fdf *fdf)
 		mlx_destroy_display(fdf->mlx);
 		free(fdf->mlx);
 	}
+	if (fdf->projected)
+	{
+		i = 0;
+		while (i < fdf->map.height)
+		{
+			free(fdf->projected[i]);
+			i++;
+		}
+		free(fdf->projected);
+	}
 	free_map(&fdf->map);
 }
 
-int	close_handler(t_fdf *fdf)
+int	close_handler(void *param)
 {
+	t_fdf	*fdf;
+
+	fdf = param;
 	cleanup_fdf(fdf);
 	exit(0);
-	return (0);
 }

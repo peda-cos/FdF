@@ -12,28 +12,49 @@
 
 #include "fdf.h"
 
-int	main(int argc, char **argv)
+static int	alloc_projected(t_fdf *fdf)
+{
+	int	i;
+
+	fdf->projected = malloc(sizeof(t_point *) * fdf->map.height);
+	if (!fdf->projected)
+		return (-1);
+	i = 0;
+	while (i < fdf->map.height)
+	{
+		fdf->projected[i] = malloc(sizeof(t_point) * fdf->map.width);
+		if (!fdf->projected[i])
+			return (-1);
+		i++;
+	}
+	return (0);
+}
+
+static void	run_fdf(char *map_file)
 {
 	t_fdf	fdf;
 
+	ft_bzero(&fdf, sizeof(t_fdf));
+	if (parse_map(map_file, &fdf.map) == -1)
+		exit_error("Error: invalid map\n", NULL);
+	assign_default_colors(&fdf.map);
+	if (alloc_projected(&fdf) == -1)
+		exit_error("Error: alloc failed\n", &fdf);
+	if (init_fdf(&fdf) == -1)
+		exit_error("Error: MLX init failed\n", &fdf);
+	init_camera(&fdf.cam, &fdf.map);
+	render(&fdf);
+	setup_hooks(&fdf);
+	mlx_loop(fdf.mlx);
+}
+
+int	main(int argc, char **argv)
+{
 	if (argc != 2)
 	{
 		ft_putstr_fd("Usage: ./fdf <map.fdf>\n", 2);
 		return (1);
 	}
-	ft_bzero(&fdf, sizeof(t_fdf));
-	if (parse_map(argv[1], &fdf.map) == -1)
-	{
-		exit_error("Error: invalid map\n", NULL);
-	}
-	assign_default_colors(&fdf.map);
-	if (init_fdf(&fdf) == -1)
-	{
-		exit_error("Error: MLX init failed\n", &fdf);
-	}
-	init_camera(&fdf.cam, &fdf.map);
-	render(&fdf);
-	setup_hooks(&fdf);
-	mlx_loop(fdf.mlx);
+	run_fdf(argv[1]);
 	return (0);
 }

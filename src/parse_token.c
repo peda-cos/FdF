@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   parse_map.c                                        :+:      :+:    :+:   */
+/*   parse_token.c                                      :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: peda-cos <peda-cos@student.42sp.org.br>    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -11,44 +11,46 @@
 /* ************************************************************************** */
 
 #include "fdf.h"
-#include <sys/stat.h>
 
-static int	open_map(char *filename)
+int	parse_hex(char *str)
 {
-	struct stat	st;
-	int			fd;
+	int	result;
+	int	digit;
 
-	if (stat(filename, &st) < 0 || !S_ISREG(st.st_mode))
+	if (!str || !*str)
 		return (-1);
-	fd = open(filename, O_RDONLY);
-	return (fd);
+	result = 0;
+	while (*str)
+	{
+		if (*str >= '0' && *str <= '9')
+			digit = *str - '0';
+		else if (*str >= 'a' && *str <= 'f')
+			digit = *str - 'a' + 10;
+		else if (*str >= 'A' && *str <= 'F')
+			digit = *str - 'A' + 10;
+		else
+			return (-1);
+		result = result * 16 + digit;
+		str++;
+	}
+	return (result);
 }
 
-int	parse_map(char *filename, t_map *map)
+int	parse_token(char *token, int *z, int *color)
 {
-	char	**lines;
-	int		count;
-	int		fd;
+	char	*comma;
+	char	*hex_start;
 
-	fd = open_map(filename);
-	if (fd < 0)
-		return (-1);
-	lines = read_lines(fd, &count);
-	close(fd);
-	if (!lines || count == 0)
-		return (-1);
-	map->height = count;
-	map->z_min = 0;
-	map->z_max = 0;
-	if (alloc_map_rows(map, lines[0]) < 0)
+	*z = ft_atoi(token);
+	comma = ft_strchr(token, ',');
+	if (comma)
 	{
-		free_lines(lines, count);
-		return (-1);
-	}
-	if (process_lines(lines, map, count) < 0)
-	{
-		free_map(map);
-		return (-1);
+		if (comma[1] != '0' || (comma[2] != 'x' && comma[2] != 'X'))
+			return (-1);
+		hex_start = comma + 3;
+		*color = parse_hex(hex_start);
+		if (*color < 0)
+			return (-1);
 	}
 	return (0);
 }

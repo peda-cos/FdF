@@ -19,8 +19,8 @@ static double	compute_zoom(t_map *map)
 	double	zoom_w;
 	double	zoom_h;
 
-	bbox_w = (map->width + map->height) * cos(0.523599);
-	bbox_h = (map->width + map->height) * sin(0.523599)
+	bbox_w = (map->width + map->height) * cos(ISO_ANGLE);
+	bbox_h = (map->width + map->height) * sin(ISO_ANGLE)
 		+ (double)(abs(map->z_max - map->z_min));
 	zoom_w = WIN_WIDTH * 0.8 / bbox_w;
 	zoom_h = WIN_HEIGHT * 0.8 / bbox_h;
@@ -54,10 +54,19 @@ int	init_fdf(t_fdf *fdf)
 		return (-1);
 	fdf->win = mlx_new_window(fdf->mlx, WIN_WIDTH, WIN_HEIGHT, "FdF");
 	if (!fdf->win)
+	{
+		mlx_destroy_display(fdf->mlx);
+		free(fdf->mlx);
 		return (-1);
+	}
 	fdf->img.ptr = mlx_new_image(fdf->mlx, WIN_WIDTH, WIN_HEIGHT);
 	if (!fdf->img.ptr)
+	{
+		mlx_destroy_window(fdf->mlx, fdf->win);
+		mlx_destroy_display(fdf->mlx);
+		free(fdf->mlx);
 		return (-1);
+	}
 	fdf->img.addr = mlx_get_data_addr(fdf->img.ptr, &fdf->img.bpp,
 			&fdf->img.line_len, &fdf->img.endian);
 	return (0);

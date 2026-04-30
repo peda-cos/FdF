@@ -12,17 +12,15 @@
 
 NAME    = fdf
 CC      = cc
-CFLAGS  = -Wall -Wextra -Werror -I./include -I./libft -I./libft/get_next_line -I./minilibx
+CFLAGS  = -Wall -Wextra -Werror -Wno-cast-function-type -I./include -I./libft -I./libft/get_next_line -I./minilibx -O2
 LDFLAGS = -L./libft -lft -L./minilibx -lmlx_Linux -lXext -lX11 -lm
-
-# ── sources ──────────────────────────────────────────────────────────────────
-SRCS = src/main.c src/parse_map.c src/parse_utils.c src/init.c \
-       src/render.c src/project.c src/draw_line.c src/color.c \
-       src/hooks.c src/cleanup.c
+SRCS = src/main.c src/parse_map.c src/parse_map_utils.c src/parse_map_alloc.c \
+       src/parse_utils.c src/parse_token.c src/init.c src/render.c \
+       src/project.c src/rotation.c src/draw_line.c src/color.c \
+       src/hooks.c src/handlers.c src/cleanup.c src/error.c
 
 OBJS = $(SRCS:.c=.o)
 
-# ── rules ────────────────────────────────────────────────────────────────────
 all: $(NAME)
 
 $(NAME): $(OBJS)
