@@ -43,10 +43,7 @@ void	cleanup_fdf(t_fdf *fdf)
 	if (fdf->win)
 		mlx_destroy_window(fdf->mlx, fdf->win);
 	if (fdf->mlx)
-	{
 		mlx_destroy_display(fdf->mlx);
-		free(fdf->mlx);
-	}
 	if (fdf->projected)
 	{
 		i = 0;

@@ -56,7 +56,6 @@ int	init_fdf(t_fdf *fdf)
 	if (!fdf->win)
 	{
 		mlx_destroy_display(fdf->mlx);
-		free(fdf->mlx);
 		return (-1);
 	}
 	fdf->img.ptr = mlx_new_image(fdf->mlx, WIN_WIDTH, WIN_HEIGHT);
@@ -64,7 +63,6 @@ int	init_fdf(t_fdf *fdf)
 	{
 		mlx_destroy_window(fdf->mlx, fdf->win);
 		mlx_destroy_display(fdf->mlx);
-		free(fdf->mlx);
 		return (-1);
 	}
 	fdf->img.addr = mlx_get_data_addr(fdf->img.ptr, &fdf->img.bpp,

@@ -62,7 +62,6 @@ char	**read_lines(int fd, int *count)
 	if (read_loop(fd, lines, count) < 0)
 	{
 		free_lines(lines, *count);
-		free(lines);
 		return (NULL);
 	}
 	return (lines);
