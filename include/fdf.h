@@ -128,7 +128,6 @@ void	free_map_partial(t_map *map, int rows);
 void	cleanup_fdf(t_fdf *fdf);
 int		close_handler(void *param);
 
-t_point	project_point(int x, int y, t_fdf *fdf);
 t_point	project_point_trig(int x, int y, t_fdf *fdf, t_trig *trig);
 
 void	rotate_x(double *y, double *z, double sin_a, double cos_a);

@@ -51,16 +51,3 @@ t_point	project_point_trig(int x, int y, t_fdf *fdf, t_trig *trig)
 	result.color = fdf->map.colors[y][x];
 	return (result);
 }
-
-t_point	project_point(int x, int y, t_fdf *fdf)
-{
-	t_trig	trig;
-
-	trig.sin_x = sin(fdf->cam.x_rot);
-	trig.cos_x = cos(fdf->cam.x_rot);
-	trig.sin_y = sin(fdf->cam.y_rot);
-	trig.cos_y = cos(fdf->cam.y_rot);
-	trig.sin_z = sin(fdf->cam.z_rot);
-	trig.cos_z = cos(fdf->cam.z_rot);
-	return (project_point_trig(x, y, fdf, &trig));
-}

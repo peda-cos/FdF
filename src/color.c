@@ -43,7 +43,7 @@ void	assign_default_colors(t_map *map)
 		x = 0;
 		while (x < map->width)
 		{
-			if (map->colors[y][x] == 0)
+			if (map->colors[y][x] == -1)
 			{
 				if (map->z_min == map->z_max)
 					t = 0.0;

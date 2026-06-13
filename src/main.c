@@ -24,7 +24,13 @@ static int	alloc_projected(t_fdf *fdf)
 	{
 		fdf->projected[i] = malloc(sizeof(t_point) * fdf->map.width);
 		if (!fdf->projected[i])
+		{
+			while (--i >= 0)
+				free(fdf->projected[i]);
+			free(fdf->projected);
+			fdf->projected = NULL;
 			return (-1);
+		}
 		i++;
 	}
 	return (0);

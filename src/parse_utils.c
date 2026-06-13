@@ -63,10 +63,19 @@ static int	parse_token_loop(char **tokens, t_map *map, int row)
 int	parse_line(char *line, t_map *map, int row)
 {
 	char	**tokens;
+	int		width;
 
 	tokens = ft_split(line, ' ');
 	if (!tokens)
 		return (-1);
+	width = 0;
+	while (tokens[width])
+		width++;
+	if (width != map->width)
+	{
+		free_split(tokens);
+		return (-1);
+	}
 	if (parse_token_loop(tokens, map, row) < 0)
 	{
 		free_split(tokens);

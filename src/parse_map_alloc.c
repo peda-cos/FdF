@@ -18,6 +18,10 @@ static int	alloc_cols(t_map *map, int i)
 	map->colors[i] = malloc(sizeof(int) * map->width);
 	if (!map->z_values[i] || !map->colors[i])
 	{
+		free(map->z_values[i]);
+		free(map->colors[i]);
+		map->z_values[i] = NULL;
+		map->colors[i] = NULL;
 		free_map_partial(map, i);
 		return (-1);
 	}

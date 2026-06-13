@@ -11,15 +11,14 @@
 /* ************************************************************************** */
 
 #include "fdf.h"
-#include <sys/stat.h>
 
-#define MAX_MAP_DIM 4096
+#define MAX_LINES 4096
 
 static char	**alloc_lines(int *count)
 {
 	char	**lines;
 
-	lines = malloc(sizeof(char *) * 4096);
+	lines = malloc(sizeof(char *) * MAX_LINES);
 	if (!lines)
 		return (NULL);
 	*count = 0;
@@ -29,15 +28,21 @@ static char	**alloc_lines(int *count)
 static int	read_loop(int fd, char **lines, int *count)
 {
 	char	*line;
+	int		len;
 
 	line = get_next_line(fd);
 	while (line)
 	{
-		if (*count >= 4096)
+		if (*count >= MAX_LINES)
 		{
 			free(line);
-			break ;
+			return (-1);
 		}
+		len = ft_strlen(line);
+		if (len > 0 && line[len - 1] == '\n')
+			line[len - 1] = '\0';
+		if (len > 1 && line[len - 2] == '\r')
+			line[len - 2] = '\0';
 		lines[*count] = line;
 		(*count)++;
 		line = get_next_line(fd);
@@ -56,6 +61,7 @@ char	**read_lines(int fd, int *count)
 		return (NULL);
 	if (read_loop(fd, lines, count) < 0)
 	{
+		free_lines(lines, *count);
 		free(lines);
 		return (NULL);
 	}
@@ -79,8 +85,8 @@ int	get_width(char *first_line)
 
 int	check_dim(int width, int height)
 {
-	if (width <= 0 || width > MAX_MAP_DIM || height <= 0
-		|| height > MAX_MAP_DIM)
+	if (width <= 0 || width > MAX_LINES || height <= 0
+		|| height > MAX_LINES)
 		return (-1);
 	return (0);
 }
